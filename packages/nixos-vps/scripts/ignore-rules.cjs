@@ -1,0 +1,3 @@
+"use strict";
+// Shared consumer defaults; root-specific artifacts are excluded separately.
+module.exports = "# Operator environment files; only explicit public/encrypted examples are shareable.\n.env\n.env.*\n*.env\n!.env.example\n!.env.*.example\n!*.env.example\n!*.enc.env\n\n# Private identities and key containers. Public *.pub files remain allowed.\n*.key\n*.pem\n*.p12\n*.pfx\n*.agekey\nid_rsa\nid_dsa\nid_ecdsa\nid_ed25519\nid_ecdsa_sk\nid_ed25519_sk\nssh_host_*_key\nage-key.txt\nage-keys.txt\n\n# Local state, exports and unfinished initialization.\n.pulumi/\npulumi-state*.json\nPulumi.*.json\n*.tfstate\n*.tfstate.*\n.nixos-vps-stage-*/\n\n# Dependencies and generated build artifacts.\nnode_modules/\nbuild/\n*.tsbuildinfo\nresult\nresult-*\n.direnv/\n*.tgz\n";

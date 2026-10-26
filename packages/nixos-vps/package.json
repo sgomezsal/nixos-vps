@@ -1,0 +1,34 @@
+{
+  "name": "nixos-vps",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A Pulumi component for provisioning and bootstrapping NixOS on Hetzner Cloud",
+  "license": "MIT",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "bin": { "nixos-vps": "scripts/cli.cjs" },
+  "files": [
+    "lib",
+    "scripts",
+    "templates",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check": "tsc -p tsconfig.json --noEmit",
+    "test": "node --test tests/*.cjs",
+    "prepack": "npm run build"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "peerDependencies": {
+    "@pulumi/pulumi": "^3.142.0"
+  },
+  "dependencies": {
+    "@pulumi/command": "^1.2.1",
+    "@pulumi/hcloud": "^1.32.0",
+    "yaml": "^2.9.1"
+  }
+}

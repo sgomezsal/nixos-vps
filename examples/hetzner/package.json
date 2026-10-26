@@ -1,0 +1,5 @@
+{
+  "name": "nixos-vps-example", "private": true, "main": "index.ts",
+  "scripts": { "check": "tsc --noEmit" },
+  "dependencies": { "nixos-vps": "0.1.0", "@pulumi/pulumi": "^3.142.0" }
+}

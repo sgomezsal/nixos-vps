@@ -1,0 +1,24 @@
+{
+  "name": "nixos-vps-workspace",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "examples/hetzner"
+  ],
+  "scripts": {
+    "build": "npm run build --workspace nixos-vps",
+    "check": "npm run build && npm run check --workspaces --if-present",
+    "test": "npm run build && npm run test --workspaces --if-present && node scripts/test-package.cjs",
+    "test:preflight": "node scripts/test-preflight.cjs",
+    "test:secrets": "node scripts/test-sops.cjs",
+    "validate:clean": "node scripts/validate-clean.cjs",
+    "pack:component": "npm pack --workspace nixos-vps --pack-destination /tmp"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

@@ -1,0 +1,6 @@
+name: nixos-vps-example
+runtime:
+  name: nodejs
+  options:
+    packagemanager: npm
+description: New VPS with one-time NixOS installation; never target the existing dev stack.

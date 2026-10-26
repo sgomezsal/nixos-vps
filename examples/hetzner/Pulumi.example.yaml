@@ -1,0 +1,12 @@
+# Copy to Pulumi.<your-stack>.yaml and replace these absolute paths.
+config:
+  nixos-vps-example:sshPublicKeyPath: /absolute/path/to/id_ed25519.pub
+  nixos-vps-example:sshPrivateKeyPath: /absolute/path/to/id_ed25519
+  nixos-vps-example:sshHostKeyPrivatePath: /absolute/path/to/dedicated-server-host-key
+  nixos-vps-example:serverType: cpx22
+  nixos-vps-example:location: nbg1
+  nixos-vps-example:tcpPorts: [80, 443]
+  # Reuse registered keys rather than registering the same fingerprint twice:
+  # nixos-vps-example:existingSshKeyIds: ["123456"]
+  # Include your deployment runner's public IP if restricting SSH:
+  # nixos-vps-example:sshSourceIps: ["203.0.113.10/32"]

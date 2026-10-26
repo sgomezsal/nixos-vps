@@ -1,0 +1,45 @@
+# Operator environment files; only explicit public/encrypted examples are shareable.
+.env
+.env.*
+*.env
+!.env.example
+!.env.*.example
+!*.env.example
+!*.enc.env
+
+# Private identities and key containers. Public *.pub files remain allowed.
+*.key
+*.pem
+*.p12
+*.pfx
+*.agekey
+id_rsa
+id_dsa
+id_ecdsa
+id_ed25519
+id_ecdsa_sk
+id_ed25519_sk
+ssh_host_*_key
+age-key.txt
+age-keys.txt
+
+# Local state, exports and unfinished initialization.
+.pulumi/
+pulumi-state*.json
+Pulumi.*.json
+*.tfstate
+*.tfstate.*
+.nixos-vps-stage-*/
+
+# Dependencies and generated build artifacts.
+node_modules/
+build/
+*.tsbuildinfo
+result
+result-*
+.direnv/
+*.tgz
+
+# Repository-only validation/build artifacts.
+packages/*/lib/
+.validation/

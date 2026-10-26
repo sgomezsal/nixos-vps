@@ -1,0 +1,4 @@
+name: standalone-nixos
+runtime: nodejs
+main: index.ts
+description: Independent consumer of the local NixOS component tarball.

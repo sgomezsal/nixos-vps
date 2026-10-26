@@ -1,0 +1,11 @@
+# Operator-only provisioning credentials. Generate an age identity with
+# age-keygen, obtain its public recipient with age-keygen -y, and replace
+# the placeholder below before encrypting secrets/provisioning.env.
+keys:
+  - &admin_me age1yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+
+creation_rules:
+  - path_regex: secrets/provisioning\.enc\.env$
+    key_groups:
+      - age:
+          - *admin_me
