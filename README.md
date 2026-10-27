@@ -12,7 +12,8 @@ SSH. The IPv4 output resolves after installation and SSH readiness checks comple
 > four VM installation checks, NixOS builds and independent tarball-consumer tests.
 > One live CX23 installation passed with the disk-inventory fix included in
 > version `0.1.2`. The live test also verified SSH identity across kexec,
-> public HTTP readiness and a second deployment with no changes. See
+> public HTTP readiness, normal reboots, a routine NixOS configuration update
+> and a second deployment with no infrastructure changes. See
 > [validation coverage](docs/validation.md) for details.
 
 > [!WARNING]

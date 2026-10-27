@@ -176,13 +176,28 @@ Before enabling publishing, configure these external settings yourself:
 
 Only the publishing job requests `id-token: write`; preparation has read-only
 repository permissions. The regular validation workflow never publishes.
-OIDC publishing and environment protections require external setup and have not
-been exercised by local tests. Neither workflow accesses Hetzner.
+OIDC publishing and environment protections require external setup. They were
+exercised by the hosted 0.1.2 release; local tests cover workflow guards rather
+than the external account settings. See [validation coverage](docs/validation.md).
+Neither workflow accesses Hetzner.
 
 ### Distribution channels
 
 `next` and `latest` are independent npm tags. Publishing with `--tag next` does
 not move `latest`. The default package page and an unqualified installation can
-therefore show an older version. Use an exact version such as `nixos-vps@0.1.1`
+therefore show an older version. Use an exact version such as `nixos-vps@0.1.2`
 or the `next` channel intentionally. Changing `latest` is a separate release
 decision, not a workaround for processing delays.
+
+After CI, original-artifact verification and consumer checks pass, a maintainer
+can promote the reviewed version without republishing it:
+
+```sh
+npm dist-tag add nixos-vps@0.1.2 latest --registry=https://registry.npmjs.org/
+npm view nixos-vps dist-tags --registry=https://registry.npmjs.org/
+```
+
+This requires npm authentication and any additional verification requested by npm.
+It changes a distribution pointer, not the tarball or the `next` tag. `latest`
+means the recommended default installation; it is not a production-readiness
+guarantee. Keep the experimental status and validation limits visible.

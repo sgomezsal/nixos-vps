@@ -81,6 +81,26 @@ evaluated shell setting is checked by the publication-scope test.
 Both fixes are included in release 0.1.2. The distribution and consumer checks
 below verify the published artifact separately from the initial live installation.
 
+### Routine operation
+
+The same live server subsequently passed a normal system reboot. Its boot ID
+changed while its installed system, root filesystem and disk identity stayed the
+same; pinned SSH authentication, SSH/Caddy readiness and public HTTP all passed
+after startup, with no failed systemd units reported.
+
+A small flake change added a non-secret marker under `/etc`. Local validation
+built the updated configuration, then `nixos-rebuild switch --target-host`
+activated a new system generation over SSH with the pinned host policy. The
+marker appeared, the boot ID stayed unchanged during activation, and disk identity,
+partition sizes, SSH and public HTTP stayed correct. No installation command or
+partitioning tool was invoked.
+
+A second normal reboot then loaded that updated generation and retained the
+marker, host identity, services and public HTTP response. A subsequent real
+Pulumi preview and constrained update reported all seven resources unchanged.
+These checks exercise routine configuration activation, not a Nixpkgs, package
+or kernel upgrade.
+
 ### Remaining provider-specific checks
 
 - Other locations, server families, bootstrap images and live UEFI boot.
@@ -88,7 +108,8 @@ below verify the published artifact separately from the initial live installatio
   paths remain covered by the local substitute-provider tests.
 - Recovery from failures after kexec or after formatting. The observed recovery
   covered a failure before either operation.
-- Long-term operation, routine NixOS updates and a broader vulnerability review.
+- Long-term operation, Nixpkgs/package/kernel upgrades and a broader
+  vulnerability review.
 
 ## Release evidence
 
@@ -117,7 +138,9 @@ published artifact.
 The exact tarball and source/integrity manifest are attached to the
 [0.1.2 release](https://github.com/sgomezsal/nixos-vps/releases/tag/v0.1.2).
 The npm `latest` tag is separate from the experimental `next` channel;
-use the documented exact version when reproducing these results.
+both were set to 0.1.2 after consumer, reboot and configuration-update checks
+passed. Promoting `latest` did not republish or change the artifact. Use the
+documented exact version when reproducing these results; tags can move later.
 
 ### Earlier evidence
 

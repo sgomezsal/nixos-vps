@@ -76,7 +76,9 @@ Local tests cover package distribution, NixOS builds and VMs, SSH checks and Pul
 lifecycle behavior with substitute providers. One live CX23 installation in
 Helsinki verified cloud-init host identity, SSH continuity through kexec and the
 final boot, disk identity, public HTTP and an unchanged second deployment, using
-the disk-inventory fix included in 0.1.2. Other provider configurations and recovery
+the disk-inventory fix included in 0.1.2. Subsequent checks verified normal reboots
+and a routine configuration update while retaining pinned SSH verification.
+Other provider configurations, package/kernel upgrades and recovery
 after kexec or formatting remain unverified. This is not a comprehensive security
 audit. See
 [validation coverage](docs/validation.md).

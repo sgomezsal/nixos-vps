@@ -7,6 +7,8 @@ NixOS from a locked flake, and returns its IP after readiness checks.
 Version `0.1.2` includes the disk-inventory fix validated during a live CX23
 installation in Helsinki. SSH identity was verified across kexec and the final
 boot, public HTTP responded successfully, and a second deployment made no changes.
+Normal reboots and a routine `nixos-rebuild` configuration update also passed on
+the same server, including booting the updated generation.
 This remains experimental; one live installation does not cover every provider
 or recovery scenario. See the repository's
 [validation coverage](https://github.com/sgomezsal/nixos-vps/blob/main/docs/validation.md)
@@ -322,10 +324,12 @@ coherent project before retrying; do not regenerate identities already in use.
 ## Validation limits
 
 Local tests cover package installation, NixOS builds and VMs, SSH behavior and
-Pulumi lifecycle operations with substitute providers. Actual Hetzner cloud-init,
-kexec transition, disk enumeration, networking, availability and recovery still
-need provider integration testing. This component does not migrate existing
-resources, DNS, volumes, runtime secrets or application data.
+Pulumi lifecycle operations with substitute providers. Live testing covers one
+CX23 in Helsinki with Ubuntu 24.04 bootstrap and BIOS boot, including SSH identity
+continuity, disk checks, public HTTP, normal reboots and a routine configuration
+update. Other provider configurations, live UEFI, package/kernel upgrades and
+recovery after kexec or formatting remain unverified. This component does not
+migrate existing resources, DNS, volumes, runtime secrets or application data.
 
 ## Flake layout
 
