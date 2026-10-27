@@ -46,3 +46,7 @@ packages/*/lib/
 
 # Prepared release tarball and integrity manifest.
 .release/
+
+# Unpublished multi-language provider artifacts and atomic preparation staging.
+.provider-release/
+.nixos-vps-provider-stage-*/

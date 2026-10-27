@@ -65,6 +65,13 @@
             modules = [ { disko.tests.efi = false; } ];
           }).config.system.build.installTest;
         };
+        devShells.provider = pkgs.mkShell {
+          inputsFrom = [ self.devShells.${system}.default ];
+          packages = [
+            (pkgs.python3.withPackages (ps: [ ps.build ps.setuptools ps.wheel ]))
+            pkgs.go pkgs.gnutar pkgs.gzip
+          ];
+        };
         devShells.default = pkgs.mkShell {
           # Use SDK-selected plugins rather than older providers bundled on PATH.
           PULUMI_IGNORE_AMBIENT_PLUGINS = "true";

@@ -1,0 +1,73 @@
+# nixos-vps component provider
+
+**Unreleased development workspace.** This package is private and is not installed
+by existing consumers of the published `nixos-vps` npm package. No provider or
+language SDK has been published.
+
+The provider hosts the existing TypeScript `NixosServer` through Pulumi's
+component-provider protocol. It keeps `nixos-vps:hetzner:NixosServer`, the child
+logical names, installer safeguards and the registered `ipv4`/`serverId` outputs.
+The implementation lives in the existing `nixos-vps` dependency; there is no second
+installer or independent cloud CRUD implementation.
+
+`schema.json` defines the language-neutral contract. Filesystem paths must be
+plain absolute paths on the machine running Pulumi. Installer references must be
+absolute local flake package references or explicit flake URLs. Dynamic
+infrastructure inputs retain their Pulumi dependencies and secret annotations.
+Node.js, Nix and OpenSSH remain required even when the consuming program is Python
+or Go.
+
+Build and test locally from the repository root:
+
+```sh
+nix develop .#provider
+npm ci --ignore-scripts
+npm run build
+npm test
+npm run test:provider
+```
+
+The integration test packages and installs a real local plugin, generates SDKs,
+and runs TypeScript, Python and Go programs against the Pulumi engine. Cloud
+CRUD is substituted on loopback; component construction uses the installed
+plugin and its bundled runtime dependencies. Switching consumer languages must
+retain the same resource identifiers. The first TypeScript-to-plugin migration
+changes the absolute runner paths: Pulumi updates the local preflight and the
+non-destructive installation `update` command. It must not reinstall NixOS or
+change cloud resources. Subsequent Python/Go switches must be no-ops.
+
+For manual SDK generation and development-plugin packaging after building:
+
+```sh
+node packages/nixos-vps-provider/scripts/generate-sdks.cjs /tmp/nixos-vps-sdks
+node packages/nixos-vps-provider/scripts/package-plugin.cjs /tmp/nixos-vps-plugin.tar.gz
+```
+
+Packaging refuses an existing file; SDK generation requires a new or empty real
+directory. Neither overwrites an existing artifact. The plugin archive supports x86_64
+Linux and requires Node.js 22+ on PATH. Its manifest reports the archive checksum
+and delegated component version. Packaging installs the checked-in runtime lock
+without installation scripts and with an empty HOME. Tar and gzip metadata are
+normalized. Do not install this preview into a backend managing real infrastructure.
+
+For the complete preview bundle, from the repository root:
+
+```sh
+npm run provider:prepare
+npm run provider:verify
+```
+
+Preparation builds every artifact twice, requires matching hashes, and tests the
+exact prepared plugin and SDK files before writing `.provider-release/`. Outputs
+remain publication-disabled. See the [multi-language guide](../../docs/multilanguage.md)
+for package names, API conventions, artifact installation, locks and CI boundaries.
+
+The integration suite uses temporary file state and loopback substitute providers.
+It must not load operator credentials or access Hetzner. Generated SDKs are test
+artifacts, not release packages. In particular, do not publish generated installation
+hooks or assume that generation alone verifies runtime interoperability.
+
+Existing TypeScript child-resource access and legacy callback transformations are
+not automatically portable to remote SDKs. A change of consumer language must be
+validated against persisted state before any real migration. The retained test VPS
+is not part of these provider tests.

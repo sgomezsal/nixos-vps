@@ -1,0 +1,100 @@
+{
+  "resources": {
+    "nixos-vps:hetzner:NixosServer": {
+      "isComponent": true,
+      "inputProperties": {
+        "flakeDirectory": {
+          "type": "string",
+          "plain": true
+        },
+        "configuration": {
+          "type": "string",
+          "plain": true
+        },
+        "installer": {
+          "type": "string",
+          "plain": true
+        },
+        "sshPublicKeyPath": {
+          "type": "string",
+          "plain": true
+        },
+        "sshPrivateKeyPath": {
+          "type": "string",
+          "plain": true
+        },
+        "sshHostKeyPrivatePath": {
+          "type": "string",
+          "plain": true
+        },
+        "expectedDisk": {
+          "type": "string",
+          "plain": true
+        },
+        "expectedDiskSerial": {
+          "type": "string",
+          "plain": true
+        },
+        "serverType": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "bootstrapImage": {
+          "type": "string"
+        },
+        "existingSshKeyIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sshSourceIps": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "tcpPorts": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "plain": true
+          },
+          "plain": true
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "sshTimeoutSeconds": {
+          "type": "integer",
+          "plain": true
+        }
+      },
+      "requiredInputs": [
+        "flakeDirectory",
+        "configuration",
+        "installer",
+        "sshPublicKeyPath",
+        "sshPrivateKeyPath",
+        "sshHostKeyPrivatePath"
+      ],
+      "properties": {
+        "ipv4": {
+          "type": "string"
+        },
+        "serverId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ipv4",
+        "serverId"
+      ]
+    }
+  }
+}

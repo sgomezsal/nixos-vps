@@ -75,6 +75,33 @@ after success or failure and preserves unrelated neighboring files.
 
 [Validation coverage](validation.md) describes the checks and their limits.
 
+## Component provider (unreleased)
+
+The private `packages/nixos-vps-provider` workspace implements Pulumi's Construct
+RPC around the published `nixos-vps@0.1.2` component. A checked-in schema generates
+TypeScript, Python and Go SDKs. The token remains
+`nixos-vps:hetzner:NixosServer`; the adapter forwards parent/protection options,
+dependencies and secrets. It registers the existing server ID and the IPv4
+output gated on installation readiness.
+
+The plugin packages its Node.js runtime dependencies, including the original
+installer component. Nix and OpenSSH still execute on the Pulumi runner; Python
+or Go replaces the consumer language, not the installation toolchain. Local paths
+crossing the RPC boundary must be plain absolute paths. Private-key contents are
+not SDK arguments.
+
+Engine tests exercise conversion of an ordinary persisted TypeScript graph to
+the remote SDKs. Moving the runner into the plugin changes its absolute paths;
+the initial migration updates local preflight/update commands without running
+installation again or changing cloud resources. Legacy callbacks and direct child-resource access are outside
+that compatibility guarantee. No live stack has been migrated to this provider.
+
+The provider preview pipeline installs its locked runtime, generates the SDKs
+with a pinned CLI and packages their public entry points. Two builds from separate
+directories must have identical artifact hashes. Exact-artifact consumer tests
+then run before atomic output creation. CI can upload those preview files but
+cannot publish them. See [multi-language distribution](multilanguage.md).
+
 ## Flakes and shared source
 
 | Flake | Purpose | Who changes it |

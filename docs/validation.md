@@ -18,6 +18,7 @@ in that run.
 | Release | Artifact identity, pending processing, integrity failures, fail-fast preparation and manual OIDC workflow guards | `npm test` |
 | Secrets | Operator-only SOPS injection with test credentials | `npm run test:secrets` |
 | Distribution and CI | Provisioning scope, pinned actions and workflow syntax | `scripts/test-publication.cjs` and package tests |
+| Component provider (unreleased) | Installed local plugin, generated TypeScript/Python/Go SDKs, persisted-state interoperability and failure recovery | `npm run test:provider` |
 
 Run `./scripts/validate.sh` for the full suite. It supplies the additional tools
 needed by the scripts above. The suite uses temporary local state, test identities
@@ -39,6 +40,93 @@ check does not represent a new VM execution.
 For the effective SSH policy test, `sshd -T` reads the generated configuration with
 only its host-key paths replaced by disposable test identities. Its authentication
 directives remain unchanged.
+
+## Unreleased component provider
+
+The local development working tree passed `./scripts/validate.sh` on
+2026-10-27. The 53 existing package tests and ten provider tests passed, with
+zero failures or skips. The independent core tarball still contained its expected
+20 files. npm audit reported zero vulnerabilities; the signature scan checked
+95 source/build/log files with zero findings. Nix checks reused existing
+successful system/VM outputs; this run does not claim fresh VM executions.
+
+The new integration test independently packs the private provider's fourteen allowed
+files, installs them outside the repository and builds a plugin archive with its
+runtime dependencies. Pulumi installs that archive into an empty temporary
+`PULUMI_HOME` and launches it normally. Automatic plugin acquisition is disabled;
+only hcloud/command CRUD is substituted on loopback. A module-resolution guard
+rejects provider runtime dependencies on the original checkout.
+
+SDK generation and actual engine runs passed for:
+
+- TypeScript: compile the generated SDK, install its tarball, type-check a
+  consumer and import its public package entry point.
+- Python: install the generated SDK in an isolated virtual environment and
+  evaluate its program through Pulumi.
+- Go: resolve the generated module, compile a consumer and run its binary
+  through Pulumi.
+
+The test retains the same cloud resource identifiers, URNs and parent across
+the original TypeScript component and all three remote SDKs. The initial move
+to the bundled plugin changes absolute runner paths, so local preflight and
+non-destructive `update` commands run once; cloud resources remain unchanged and
+installation is not repeated. A subsequent unchanged deployment and the switches
+to Python/Go cause no CRUD operations. Secret annotations and readiness outputs
+are checked across the RPC boundary.
+
+The same test exercises invalid deferred inputs, configuration/firewall updates,
+replacement previews, replacement installation, protection, deletion, preview
+without key-file access and retry after a failed initial installation without
+recreating the server. It also rejects unapproved files in the provider package.
+The unit tests cover static input validation, schema/API parity, import behavior,
+resource options and refusal to overwrite existing artifacts.
+
+This validates the component protocol and local packaging, not a live migration.
+No Hetzner account, existing consumer project or real cloud resource was accessed
+or changed. No provider/SDK was published. The published 0.1.2 implementation is
+unchanged. Registry authorization and supported migration
+paths still require review before releasing the provider. Legacy TypeScript
+callback transformations and direct child access are outside the tested contract.
+
+### Distribution preview
+
+Local `provider:prepare` and `provider:verify` also passed on 2026-10-27 for the
+uncommitted development working tree. Two separate build directories produced
+identical SHA-256 values for all six artifacts: the plugin, npm SDK, Python wheel,
+Python sdist, Go source archive and schema. Canonical archive metadata, locked npm
+graphs, the checked-in Go graph/checksums and the locked Nix Python build tools
+were used. Both the plugin runtime and Node SDK build passed their high-severity
+npm audit gates.
+
+The exact prepared npm and wheel files were installed into independent consumers;
+the Python sdist was installed in a separate environment; the prepared Go module
+was compiled and evaluated by Pulumi. The prepared plugin was installed normally
+into disposable plugin state. The same lifecycle/secret/readiness checks above
+passed against those artifacts, with cloud CRUD substituted on loopback.
+
+Regression tests also passed for the frozen API/distribution names, integrity-locked
+graphs, deterministic metadata, tampered files, unsafe artifact paths, manifest
+symlinks and unvalidated status. Verification and a refused overwrite preserved
+artifact hashes, modes and modification times. The CI job's dependencies, pinned
+actions and absence of publishing/cloud credentials were checked locally;
+actionlint passed. Hosted results are separate from these local checks and must
+be reviewed in the repository's GitHub Actions workflow.
+
+A read-only scan of 12,414 prepared archive members found no operator-home or
+workspace-path references. Verification of the eight final output files also
+preserved their hashes, permissions and modification times. This inspection
+complements the source signature scan; it is not an exhaustive secrets audit.
+
+Before pushing the provider changes, `npm run validate:clean` also passed from a
+tracked-source snapshot with an empty HOME/npm cache and no initial node_modules
+or cloud credentials. It repeated all 63 tests and the full local validation;
+shared system/Nix store caches were retained.
+
+The preview manifest records a dirty working tree and explicitly disables
+publication. The original published package has no source changes. These results
+do not validate a live migration or reserve npm/PyPI names. See the
+[multi-language guide](multilanguage.md) for artifact installation and release
+boundaries.
 
 ## Live Hetzner test
 

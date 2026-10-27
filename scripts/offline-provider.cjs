@@ -13,7 +13,7 @@ const provider={version:'1.43.2',
   const outs={...inputs};if(urn.includes('hcloud:index/server:Server'))outs.ipv4Address='192.0.2.55';
   if(urn.endsWith('-preflight'))outs.stdout=JSON.stringify(preflight());else if(urn.includes('command:local:Command'))outs.stdout='';
   s.objects[id]={urn,inputs,outs};save(s);return {id,outs};},
- async update(id,urn,olds,news){const s=read();s.events.push({op:'update',urn,id});
+ async update(id,urn,olds,news){if(urn.endsWith('-preflight')&&news.environment?.NIXOS_INPUT_ERROR)throw new Error(news.environment.NIXOS_INPUT_ERROR);const s=read();s.events.push({op:'update',urn,id});
   if(urn.endsWith('-install')){if(!news.update||!news.update.endsWith(' update'))throw new Error('Unsafe installer update');const r=require('node:child_process').spawnSync('/bin/sh',['-c',news.update],{encoding:'utf8',env:{PATH:'/nonexistent'}});if(r.status!==0)throw new Error('Update was not non-destructive');s.installUpdates++;}
   const outs={...news};if(urn.includes('hcloud:index/server:Server'))outs.ipv4Address='192.0.2.55';if(urn.endsWith('-preflight'))outs.stdout=JSON.stringify(preflight());else if(urn.includes('command:local:Command'))outs.stdout='';s.objects[id]={urn,inputs:news,outs};save(s);return {outs};},
  async read(id,urn){const s=read(),o=s.objects[id];return o?{id,props:o.outs,inputs:o.inputs}:{id:''};},

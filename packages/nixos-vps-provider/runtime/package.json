@@ -1,0 +1,9 @@
+{
+  "name": "nixos-vps-plugin-runtime",
+  "version": "0.2.0-dev.0",
+  "private": true,
+  "dependencies": {
+    "@pulumi/pulumi": "3.272.0",
+    "nixos-vps": "0.1.2"
+  }
+}

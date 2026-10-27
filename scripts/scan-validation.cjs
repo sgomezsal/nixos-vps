@@ -3,10 +3,10 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 const root = path.resolve(__dirname, "..");
-const listed = spawnSync("git", ["ls-files", "-z"], { cwd: root, encoding: "utf8" });
+const listed = spawnSync("git", ["ls-files", "--cached", "--others", "--exclude-standard", "-z"], { cwd: root, encoding: "utf8" });
 if (listed.status !== 0) throw new Error("Unable to enumerate tracked source");
 const files = listed.stdout.split("\0").filter(Boolean).map(file => path.join(root, file));
-for (const directory of [path.join(root, "packages/nixos-vps/lib"), path.join(root, ".validation")]) {
+for (const directory of [path.join(root, "packages/nixos-vps/lib"), path.join(root, "packages/nixos-vps-provider/lib"), path.join(root, ".validation")]) {
   if (!fs.existsSync(directory)) continue;
   const visit = dir => {
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {

@@ -6,7 +6,7 @@
     "examples/hetzner"
   ],
   "scripts": {
-    "build": "npm run build --workspace nixos-vps",
+    "build": "npm run build --workspace nixos-vps && npm run build --workspace nixos-vps-provider",
     "check": "npm run build && npm run check --workspaces --if-present",
     "test": "npm run build && npm run test --workspaces --if-present && node scripts/test-package.cjs",
     "test:preflight": "node scripts/test-preflight.cjs",
@@ -14,7 +14,10 @@
     "validate:clean": "node scripts/validate-clean.cjs",
     "pack:component": "npm pack --workspace nixos-vps --pack-destination /tmp",
     "release:prepare": "node scripts/release.cjs prepare",
-    "release:verify": "node scripts/release.cjs verify"
+    "release:verify": "node scripts/release.cjs verify",
+    "test:provider": "node scripts/test-component-provider.cjs",
+    "provider:prepare": "node scripts/provider-release.cjs prepare .provider-release",
+    "provider:verify": "node scripts/provider-release.cjs verify .provider-release"
   },
   "devDependencies": {
     "@actions/glob": "0.6.1",

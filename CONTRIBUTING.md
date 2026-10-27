@@ -17,6 +17,17 @@ npm test
 `npm test` runs the component and CLI tests, then installs the package tarball in
 an independent consumer project to check its imports, declarations and templates.
 
+For the unreleased component provider, use `nix develop .#provider` and run
+`npm run test:provider` after building. This adds Python and Go and exercises
+generated SDKs through a locally installed plugin. The full suite includes this
+test. Keep the provider workspace private; the existing release workflow publishes
+only the TypeScript package, not the provider or generated SDKs.
+
+The CI `provider-artifacts` job depends on full validation, then runs
+`npm run provider:prepare` and `npm run provider:verify`. It uploads preview files
+without publishing. See [multi-language preparation](docs/multilanguage.md) for the
+locked build inputs, two-build reproducibility check and SDK naming contract.
+
 For changes to installation, SSH policy, disk layout or lifecycle handling, run
 the full suite:
 

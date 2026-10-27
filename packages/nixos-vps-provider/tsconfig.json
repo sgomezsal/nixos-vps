@@ -1,0 +1,5 @@
+{
+  "extends": "../nixos-vps/tsconfig.json",
+  "compilerOptions": { "rootDir": "src", "outDir": "lib" },
+  "include": ["src/**/*.ts"]
+}

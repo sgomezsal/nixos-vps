@@ -20,3 +20,38 @@ jobs:
           extra_nix_config: |
             experimental-features = nix-command flakes
       - run: ./scripts/validate.sh
+  provider-artifacts:
+    needs: validate
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: cachix/install-nix-action@ba0dd844c9180cbf77aa72a116d6fbc515d0e87b # v27
+        with:
+          install_url: https://releases.nixos.org/nix/nix-2.34.8/install
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      - name: Prepare reproducible provider and SDK previews
+        run: |
+          nix develop .#provider --command bash -euo pipefail -c '
+            npm ci --ignore-scripts
+            npm run provider:prepare
+            npm run provider:verify
+          '
+      - name: Verify source identity
+        run: |
+          nix develop .#provider --command node <<'JS'
+          const {verify}=require('./scripts/provider-release.cjs');
+          const manifest=verify('.provider-release');
+          if(manifest.source.dirty || manifest.source.commit!==process.env.GITHUB_SHA)
+            throw Error('Provider artifacts must come from the clean checked-out commit');
+          JS
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: provider-preview-${{ github.sha }}
+          archive: true
+          include-hidden-files: true
+          path: .provider-release/*
+          if-no-files-found: error
+          retention-days: 7

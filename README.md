@@ -84,6 +84,12 @@ installation requirements and troubleshooting instructions.
 
 ## Development
 
+An [unreleased component provider](packages/nixos-vps-provider/README.md) adds
+local TypeScript, Python and Go SDK testing. It is separate from the published
+TypeScript package and is not yet available for installation from a registry.
+See the [multi-language preview guide](docs/multilanguage.md) for its API, names
+and publication-disabled artifact workflow.
+
 With Nix flakes enabled on x86_64 Linux:
 
 ```sh

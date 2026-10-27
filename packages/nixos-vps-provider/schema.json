@@ -1,0 +1,137 @@
+{
+  "name": "nixos-vps",
+  "version": "0.2.0-dev.0",
+  "license": "MIT",
+  "homepage": "https://github.com/sgomezsal/nixos-vps",
+  "repository": "https://github.com/sgomezsal/nixos-vps",
+  "pluginDownloadURL": "github://api.github.com/sgomezsal/nixos-vps",
+  "description": "Remote component adapter for the shared nixos-vps implementation. Unreleased.",
+  "resources": {
+    "nixos-vps:hetzner:NixosServer": {
+      "isComponent": true,
+      "inputProperties": {
+        "flakeDirectory": {
+          "type": "string",
+          "plain": true,
+          "description": "Absolute local directory containing the consumer flake and flake.lock."
+        },
+        "configuration": {
+          "type": "string",
+          "plain": true,
+          "description": "Attribute under nixosConfigurations, for example web."
+        },
+        "installer": {
+          "type": "string",
+          "plain": true,
+          "description": "Absolute local flake package reference or explicit pinned installer flake URL."
+        },
+        "sshPublicKeyPath": {
+          "type": "string",
+          "plain": true,
+          "description": "Absolute path to the deployment public key."
+        },
+        "sshPrivateKeyPath": {
+          "type": "string",
+          "plain": true,
+          "description": "Absolute path to the deployment private key; keep it outside the flake."
+        },
+        "sshHostKeyPrivatePath": {
+          "type": "string",
+          "plain": true,
+          "description": "Absolute path to the separate Ed25519 server host private key."
+        },
+        "expectedDisk": {
+          "type": "string",
+          "plain": true,
+          "description": "Expected whole disk; defaults to /dev/sda."
+        },
+        "expectedDiskSerial": {
+          "type": "string",
+          "plain": true,
+          "description": "Optional externally verified disk serial."
+        },
+        "serverType": {
+          "type": "string",
+          "description": "x86_64 CX, CPX or CCX plan; defaults to cpx22."
+        },
+        "location": {
+          "type": "string",
+          "description": "Hetzner location code; defaults to nbg1."
+        },
+        "bootstrapImage": {
+          "type": "string",
+          "description": "Ubuntu or Debian bootstrap image; defaults to ubuntu-24.04."
+        },
+        "existingSshKeyIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Optional registered deployment SSH key IDs; omit to register a key."
+        },
+        "sshSourceIps": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Allowed SSH sources; include the deployment runner. Defaults to public IPv4/IPv6."
+        },
+        "tcpPorts": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "plain": true
+          },
+          "plain": true,
+          "description": "Additional inbound TCP ports. The NixOS firewall must also allow them."
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Public Hetzner server labels."
+        },
+        "sshTimeoutSeconds": {
+          "type": "integer",
+          "plain": true,
+          "description": "SSH readiness timeout in seconds, between 1 and 3600; defaults to 600."
+        }
+      },
+      "requiredInputs": [
+        "flakeDirectory",
+        "configuration",
+        "installer",
+        "sshPublicKeyPath",
+        "sshPrivateKeyPath",
+        "sshHostKeyPrivatePath"
+      ],
+      "properties": {
+        "ipv4": {
+          "type": "string",
+          "description": "IPv4 address, resolved only after initial installation and SSH readiness."
+        },
+        "serverId": {
+          "type": "string",
+          "description": "Hetzner server ID."
+        }
+      },
+      "required": [
+        "ipv4",
+        "serverId"
+      ],
+      "description": "Creates a fresh server, SSH key and firewall, then performs one initial NixOS installation. Routine updates use nixos-rebuild."
+    }
+  },
+  "language": {
+    "nodejs": {
+      "packageName": "@sgomezsal/nixos-vps"
+    },
+    "python": {
+      "packageName": "pulumi_nixos_vps"
+    },
+    "go": {
+      "importBasePath": "github.com/sgomezsal/nixos-vps/sdk/go/nixosvps"
+    }
+  }
+}

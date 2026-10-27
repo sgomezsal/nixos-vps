@@ -1,0 +1,18 @@
+{
+  "format": 1,
+  "platform": "linux-amd64",
+  "pluginDownloadURL": "github://api.github.com/sgomezsal/nixos-vps",
+  "npmPackage": "@sgomezsal/nixos-vps",
+  "pythonDistribution": "pulumi-nixos-vps",
+  "pythonModule": "pulumi_nixos_vps",
+  "goModule": "github.com/sgomezsal/nixos-vps/sdk/go/nixosvps",
+  "tools": {
+    "pulumi": "3.217.1",
+    "nodeMajor": 22,
+    "typescript": "5.9.3",
+    "nodeTypes": "22.20.5",
+    "pythonPulumi": "3.217.1",
+    "parver": "0.5",
+    "semver": "3.0.4"
+  }
+}
