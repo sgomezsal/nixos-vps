@@ -1,6 +1,6 @@
 # Validation coverage
 
-Last completed full local run: **2026-10-26**. All **37 package tests passed**, with
+Last completed full local run: **2026-10-26**. All **38 package tests passed**, with
 no failures or skipped tests. npm audit and credential scans reported no findings
 in that run.
 
@@ -48,6 +48,7 @@ integration testing:
 - Disk serials, device enumeration, firmware and network behavior.
 - Provider update/replacement plans and interrupted-install recovery.
 
-Hosted GitHub Actions has not yet been run. npm audit covers npm dependencies;
+A successful hosted GitHub Actions run is pending after pinning the CI Nix
+installer to a version supported by preflight. npm audit covers npm dependencies;
 NixOS package vulnerability assessment is separate. Credential scans cover known
 patterns and inspected files, rather than every possible form of secret.

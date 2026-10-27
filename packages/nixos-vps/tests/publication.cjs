@@ -23,6 +23,17 @@ test('validation workflow pins every action and does not persist checkout creden
  assert.ok(steps.some(step=>step.run==='./scripts/validate.sh'));
  assert.ok(!JSON.stringify(workflow).includes('${{ secrets.'));
 });
+test("CI installs an explicit Nix release accepted by the actual tool preflight",()=>{
+ const workflow=YAML.parse(fs.readFileSync(path.join(root,".github/workflows/ci.yml"),"utf8"));
+ const installer=workflow.jobs.validate.steps.find(step=>step.uses?.startsWith("cachix/install-nix-action@"));
+ const match=installer.with.install_url?.match(/^https:\/\/releases\.nixos\.org\/nix\/nix-(\d+\.\d+\.\d+)\/install$/);
+ assert.ok(match,"Pin an official Nix installer URL instead of relying on the action default");
+ const {checkTools}=require("../scripts/runner.cjs");
+ const execute=version=>binary=>binary==="nix" ? "nix (Nix) "+version : "OpenSSH_9.9";
+ checkTools(execute(match[1]));
+ assert.throws(()=>checkTools(execute("2.22.1")),/Nix >=2.24/);
+ assert.match(installer.with.extra_nix_config,/experimental-features\s*=.*nix-command.*flakes/);
+});
 test('review package stays private and does not gain publishing or deployment lifecycle hooks',()=>{
  const metadata=JSON.parse(fs.readFileSync(path.join(root,'packages/nixos-vps/package.json')));
  assert.equal(metadata.private,true);for(const name of ['publish','prepublish','postpublish','postinstall','install'])assert.equal(metadata.scripts[name],undefined);
