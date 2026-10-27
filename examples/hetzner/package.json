@@ -6,7 +6,7 @@
     "check": "tsc --noEmit"
   },
   "dependencies": {
-    "nixos-vps": "0.1.1",
+    "nixos-vps": "0.1.2",
     "@pulumi/pulumi": "^3.142.0"
   }
 }

@@ -198,13 +198,13 @@ async function install(config, env, execute, sleep = ms => new Promise(resolve =
       '. /etc/os-release; printf "%s" "$ID"', config.timeout, sleep);
     if (currentOs === "nixos") throw new Error("Refusing to reinstall an existing NixOS system; use nixos-rebuild or recover Pulumi state");
     if (!["ubuntu", "debian"].includes(currentOs)) throw new Error("Bootstrap image must be Ubuntu or Debian");
-    const disk = validateDisk(diskInventory(trustedExecute("ssh", [...sshArgs, "lsblk --json --bytes --output PATH,TYPE,SERIAL,SIZE,MOUNTPOINTS"])), config);
+    const disk = validateDisk(diskInventory(trustedExecute("ssh", [...sshArgs, "lsblk --tree --json --bytes --output PATH,TYPE,SERIAL,SIZE,MOUNTPOINTS"])), config);
     event("install");
     const installArgs = ["--build-on", "local", "--store-paths", checked.diskoPath, checked.systemPath, "--target-host", `root@${target}`,
       "-i", config.privateKeyPath, "--copy-host-keys"];
     trustedExecute(path.join(checked.installerPath, "bin/nixos-anywhere"), [...installArgs, "--phases", "kexec"]);
     await waitForSsh(trustedExecute, sshArgs, '. /etc/os-release; test "$ID" = nixos && test "$VARIANT_ID" = installer', config.timeout, sleep);
-    validateDisk(diskInventory(trustedExecute("ssh", [...sshArgs, "lsblk --json --bytes --output PATH,TYPE,SERIAL,SIZE,MOUNTPOINTS"])), config, disk, false);
+    validateDisk(diskInventory(trustedExecute("ssh", [...sshArgs, "lsblk --tree --json --bytes --output PATH,TYPE,SERIAL,SIZE,MOUNTPOINTS"])), config, disk, false);
     trustedExecute(path.join(checked.installerPath, "bin/nixos-anywhere"), [...installArgs, "--phases", "disko,install,reboot"]);
     event("post-install-ssh");
     const installed = await waitForSsh(trustedExecute, sshArgs,

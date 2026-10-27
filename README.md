@@ -8,10 +8,11 @@ and installer integrity before creating cloud resources, then installs NixOS ove
 SSH. The IPv4 output resolves after installation and SSH readiness checks complete.
 
 > [!NOTE]
-> **Experimental / pre-release.** Local validation passes: 52 package tests,
+> **Experimental / pre-release.** Local validation passes: 53 package tests,
 > four VM installation checks, NixOS builds and independent tarball-consumer tests.
-> Live Hetzner provisioning has not yet been validated. Version `0.1.1` is available
-> on [npm](https://www.npmjs.com/package/nixos-vps/v/0.1.1). See
+> One live CX23 installation passed with the disk-inventory fix included in
+> version `0.1.2`. The live test also verified SSH identity across kexec,
+> public HTTP readiness and a second deployment with no changes. See
 > [validation coverage](docs/validation.md) for details.
 
 > [!WARNING]
@@ -45,10 +46,10 @@ supply the operator's provisioning token.
 
 ## Get started
 
-Install the published component in a Pulumi project:
+Install the component in a Pulumi project:
 
 ```sh
-npm install --ignore-scripts nixos-vps@0.1.1 @pulumi/pulumi
+npm install --ignore-scripts nixos-vps@0.1.2 @pulumi/pulumi
 ```
 
 The npm package requires the system tools below. For a new project, follow the
@@ -109,13 +110,13 @@ Build a tarball:
 npm run pack:component
 ```
 
-This creates `/tmp/nixos-vps-0.1.1.tgz`.
+This creates `/tmp/nixos-vps-0.1.2.tgz`.
 
 The workspace root keeps `private: true` to prevent publishing the monorepo.
 The release package in `packages/nixos-vps` is publishable and defaults to the
 `next` npm tag for experimental releases. These settings do not publish anything
-automatically or control GitHub visibility. Version `0.1.1` is published; local
-tarball installation remains supported. Registry tags are distribution pointers,
+automatically or control GitHub visibility. Local tarball installation is also
+supported. Registry tags are distribution pointers,
 not stability guarantees.
 
 See [release preparation](CONTRIBUTING.md#release-preparation) for the manual
@@ -126,6 +127,7 @@ validation and publication steps.
 - [Quickstart and API reference](packages/nixos-vps/README.md)
 - [Architecture](docs/architecture.md)
 - [Validation coverage](docs/validation.md)
+- [Changelog](CHANGELOG.md)
 - [Security](SECURITY.md)
 - [Contributing](CONTRIBUTING.md)
 

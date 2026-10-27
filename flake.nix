@@ -66,6 +66,8 @@
           }).config.system.build.installTest;
         };
         devShells.default = pkgs.mkShell {
+          # Use SDK-selected plugins rather than older providers bundled on PATH.
+          PULUMI_IGNORE_AMBIENT_PLUGINS = "true";
           buildInputs = with pkgs; [
             pulumi-bin
             nodejs_22

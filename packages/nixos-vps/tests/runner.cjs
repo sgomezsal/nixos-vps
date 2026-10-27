@@ -77,6 +77,20 @@ test('all phases pin one known host, use immutable outputs, and check disk ident
  for(const [b,a,o]of m.calls.filter(([b])=>b.endsWith('/bin/nixos-anywhere'))){assert.ok(a.includes('--store-paths'));assert.ok(a.includes('/nix/store/test-system'));assert.equal(o.env.NIXOS_KNOWN_HOSTS.includes('known_hosts'),true);assert.equal(o.env.HCLOUD_TOKEN,undefined);}
  assert.equal(m.calls.filter(([b,a])=>b==='ssh'&&a.at(-1).startsWith('lsblk')).length,2);
 });
+test('disk probes explicitly request a tree when PATH columns omit NAME, preserving root ancestry',async t=>{
+ const c=fixture(t),m=executor(c);let probes=0;
+ const hierarchical=disk();
+ const flat={blockdevices:[{...hierarchical.blockdevices[0],children:undefined},...hierarchical.blockdevices[0].children]};
+ assert.throws(()=>r.validateDisk(flat,c),/bootstrap root/);
+ await r.install(c,{NIXOS_TARGET:'192.0.2.1'},(binary,args,options)=>{
+  if(binary==='ssh'&&args.at(-1).startsWith('lsblk')){
+   probes++;const command=args.at(-1);
+   return JSON.stringify(command.split(' ').includes('--tree')?hierarchical:flat);
+  }
+  return m.execute(binary,args,options);
+ });
+ assert.equal(probes,2);assert.deepEqual(m.stages,['kexec','disko,install,reboot']);
+});
 test('wrong physical disk, serial, topology or root mount rejects before kexec',async t=>{
  for(const layout of [{blockdevices:[]},{blockdevices:[...disk().blockdevices,...disk().blockdevices]},{blockdevices:[{...disk().blockdevices[0],path:'/dev/sdb'}]},{blockdevices:[{...disk().blockdevices[0],children:[]}]}]){const c=fixture(t),m=executor(c,{layout});await assert.rejects(r.install(c,{NIXOS_TARGET:'192.0.2.1'},m.execute),/Disk safety/);assert.equal(m.stages.length,0);}
  const c=fixture(t);c.expectedDiskSerial='different';const m=executor(c);await assert.rejects(r.install(c,{NIXOS_TARGET:'192.0.2.1'},m.execute),/serial mismatch/);

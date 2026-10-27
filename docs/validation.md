@@ -40,15 +40,55 @@ For the effective SSH policy test, `sshd -T` reads the generated configuration w
 only its host-key paths replaced by disposable test identities. Its authentication
 directives remain unchanged.
 
-## What remains unverified
+## Live Hetzner test
 
-Actual Hetzner provisioning has not been exercised. The following need provider
-integration testing:
+On 2026-10-27, an independent consumer installed `nixos-vps@0.1.1` from npm
+and provisioned one CX23 in Helsinki, starting from Ubuntu 24.04.
+The first installation attempt stopped before kexec or formatting: `lsblk`
+returned a flat JSON list because its requested columns omitted `NAME` and the
+command did not specify `--tree`. The disk guard correctly refused to infer
+the root partition's parent from that list.
 
-- Cloud-init installation of the predetermined SSH host identity.
-- Host-key continuity through the actual kexec transition.
-- Disk serials, device enumeration, firmware and network behavior.
-- Provider update/replacement plans and interrupted-install recovery.
+The source fix explicitly requests `--tree` in both disk probes. The same patch
+was applied to the consumer's installed runner, and recovery was previewed before
+continuing: only the failed installation command was created; the server and
+the other five resources stayed unchanged. This is live evidence for the patched
+runner, not a successful installation with the unmodified npm 0.1.1 artifact.
+The fix has a regression test covering flat versus hierarchical disk inventories.
+
+The patched installation completed with:
+
+- The predetermined SSH host identity authenticated on Ubuntu, in the kexec
+  installer and after the final reboot, without accepting an unknown key.
+- The same disk path, nonempty serial and size verified across kexec.
+- NixOS booted from the root ext4 partition, with a FAT boot partition; the
+  actual firmware path was BIOS.
+- Active SSH and Caddy services, no failed systemd units, public-key-only SSH
+  authentication and the expected HTTP 200 response from the public web endpoint.
+- A second real `pulumi up`, constrained by a no-change plan, reporting all
+  seven resources unchanged; installation was not run again.
+
+This test used a dedicated project and incurred charges for one server and its
+IPv4 address. It did not exercise other projects or existing infrastructure.
+The full local `./scripts/validate.sh` suite completed successfully after the fix:
+53 package tests with no failures or skips, TypeScript and independent tarball
+consumption, SSH policy/identity checks, substitute-provider lifecycle tests,
+template parity, zero npm audit vulnerabilities and zero credential-scan findings.
+Nix checks reused existing successful VM outputs; no new VM execution is claimed.
+The development shell also now ignores ambient provider binaries, preventing an
+older bundled hcloud plugin from overriding the version selected by the SDK. Its
+evaluated shell setting is checked by the publication-scope test.
+This local evidence does not replace the historical full-CI evidence above or
+claim that either fix is already published.
+
+### Remaining provider-specific checks
+
+- Other locations, server families, bootstrap images and live UEFI boot.
+- Real-provider infrastructure updates, replacements and deletion; those lifecycle
+  paths remain covered by the local substitute-provider tests.
+- Recovery from failures after kexec or after formatting. The observed recovery
+  covered a failure before either operation.
+- Long-term operation, routine NixOS updates and a broader vulnerability review.
 
 ## Release evidence
 
