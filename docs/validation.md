@@ -128,6 +128,45 @@ do not validate a live migration or reserve npm/PyPI names. See the
 [multi-language guide](multilanguage.md) for artifact installation and release
 boundaries.
 
+### GitHub artifact consumer check
+
+On 2026-10-27, the preview bundle from clean commit `96a6ea9` was downloaded
+from the successful [GitHub run 40590088663](https://github.com/sgomezsal/nixos-vps/actions/runs/40590088663).
+Its manifest, schema, locks and artifact checksums passed local verification.
+Those downloaded files were used for the consumer checks, rather than replacing
+them with newly generated SDKs.
+
+The [local quickstart](../examples/provider/README.md) was exercised in a disposable
+project with an empty HOME and no cloud credentials. Initialization generated
+real distinct SSH identities. The bootstrap, TypeScript, Python and Go stages
+each passed real local NixOS/installer validation. TypeScript type-checking,
+Python wheel installation/dependency checking/syntax compilation and a Go source
+build passed. The final run exited successfully and removed its temporary files.
+An earlier test-harness cleanup failed on read-only Go cache directories; the
+rerun used a writable disposable module cache. No operator cache was modified.
+
+The expanded `test:provider` run passed against that same downloaded bundle.
+It executed the checked-in TypeScript, Python and Go examples using their normal
+source loaders, including Pulumi's default Go compilation. Each passed a fresh
+preview without CRUD, simulated creation, readiness outputs, an unchanged second
+update and deletion. Missing required configuration and an empty SSH source list
+failed before cloud CRUD. Migration, secret propagation, protection, replacement
+and partial-install recovery checks also passed. The test refreshes the Go module
+graph after copying the source; an earlier harness run correctly failed when the
+new config import had no checksum entry. Cloud operations and installation in
+these engine checks were loopback simulations, not real provisioning.
+
+`npm run check` and `npm test` also passed: 53 existing package tests plus ten
+provider tests, zero failures or skips, and independent core tarball consumption.
+The credential signature scan checked 99 source/build/log files with zero findings.
+These checks do not constitute a new full VM-suite run.
+
+The initializer/validator still uses a TypeScript bootstrap for Python and Go.
+Its Nix checks target the generated `nixos/` directory and `web` host; they do not
+validate arbitrary alternative targets or replace language-specific checks.
+The remote SDKs remain unpublished. No Hetzner account, live consumer, cloud
+resource or package registry publication was used in this check.
+
 ## Live Hetzner test
 
 On 2026-10-27, an independent consumer installed `nixos-vps@0.1.1` from npm

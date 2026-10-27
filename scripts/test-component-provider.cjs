@@ -174,6 +174,36 @@ const s=new NixosServer('web',a,{parent,protect:c.protect||false});exports.ipv4=
     assert.equal(state().events.filter(e=>e.op==='create'&&e.urn.includes('hcloud:index/server:Server')).length,serverCreates,'Retry recreated server');
     const settled=state().events.length;up();assert.equal(state().events.length,settled);
     cli(['destroy','--yes','--skip-preview']);assert.equal(Object.keys(state().objects).length,0);
+    // Exercise the actual user programs with source loaders, not JS or a Go binary.
+    const metadata=JSON.parse(fs.readFileSync(path.join(temporary,'package.json')));
+    metadata.main='index.ts';
+    fs.writeFileSync(path.join(temporary,'package.json'),JSON.stringify(metadata));
+    fs.writeFileSync(path.join(temporary,'tsconfig.json'),JSON.stringify({compilerOptions:{target:'ES2020',module:'commonjs',moduleResolution:'node',strict:true,skipLibCheck:true},include:['index.ts']}));
+    env.PULUMI_NODEJS_TYPESCRIPT='true';
+    for(const [language,filename] of [['typescript','index.ts'],['python','__main__.py'],['go','main.go']]) {
+      fs.copyFileSync(path.join(root,'examples/provider',language,filename),path.join(temporary,filename));
+      if(language==='go')run('go',['mod','tidy']);
+      const runtime=language==='typescript'?'nodejs':language==='python'?{name:'python',options:{virtualenv:'.venv'}}:'go';
+      fs.writeFileSync(path.join(temporary,'Pulumi.yaml'),JSON.stringify({name:'component-provider-offline',runtime}));
+      const settings={flakeDirectory:temporary+'/flake',sshPublicKeyPath:'/unexecuted.pub',sshPrivateKeyPath:'/unexecuted',sshHostKeyPrivatePath:temporary+'/host'};
+      const writeSettings=value=>fs.writeFileSync(path.join(temporary,'Pulumi.partial.yaml'),JSON.stringify({config:Object.fromEntries(Object.entries(value).map(([key,item])=>['component-provider-offline:'+key,item]))}));
+      writeSettings(settings);
+      const empty=state().events.length;
+      cli(['preview']);assert.equal(state().events.length,empty,'Source preview performed CRUD');
+      writeSettings({...settings,sshSourceIps:[]});
+      assert.match(cli(['up','--yes','--skip-preview'],true),/sshSourceIps/);
+      assert.equal(state().events.length,empty,'Empty SSH source list performed CRUD');
+      writeSettings(settings);
+      up();assertReady();
+      const ready=state().events.length;
+      up();assert.equal(state().events.length,ready,'Source consumer was not idempotent');
+      cli(['destroy','--yes','--skip-preview']);assert.equal(Object.keys(state().objects).length,0);
+      console.log('USER SOURCE PASS: '+language+' checked-in example, default language loader, empty SSH sources rejected before CRUD, fresh preview/create, ready outputs, no-op and deletion.');
+      fs.writeFileSync(path.join(temporary,'Pulumi.partial.yaml'),JSON.stringify({config:{}}));
+      const missing=state().events.length;
+      assert.match(cli(['preview'],true),/flakeDirectory/);
+      assert.equal(state().events.length,missing,'Missing required user config performed CRUD');
+    }
     console.log('COMPONENT PROVIDER PASS: independently packaged/installed plugin; real Construct RPC; unchanged TypeScript→remote→Python→Go resource IDs/URNs; migration only updates local runner paths without reinstalling; secret propagation, outputs, preview, updates, protection, replacement, deletion and partial-failure retry. Cloud providers were loopback substitutes.');
   } finally {
     for(const child of children)child.kill();

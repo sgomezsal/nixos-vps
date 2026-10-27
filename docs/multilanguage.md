@@ -97,6 +97,11 @@ authorship: obtain the manifest and artifacts from the same trusted CI run.
 
 ## Local artifact installation
 
+For complete setup commands and runnable programs, follow the
+[three-language local quickstart](../examples/provider/README.md). It includes
+key generation, real local Nix validation, language-specific dependencies and
+offline engine tests. The short commands below are only artifact installation.
+
 Use a disposable local project/backend for preview testing. Do not migrate an
 existing cloud stack merely to try the SDK. Download or copy the whole artifact
 directory, check out its matching source version, and verify it first:
@@ -119,10 +124,12 @@ npm install --ignore-scripts /absolute/path/to/artifacts/sgomezsal-nixos-vps-0.2
 python -m pip install /absolute/path/to/artifacts/pulumi_nixos_vps-0.2.0.dev0-py3-none-any.whl
 
 # Go project: extract the module to a separate local directory
+# First create the project with go mod init and add your main.go imports.
 mkdir -p /absolute/path/to/local-module
 tar -xzf /absolute/path/to/artifacts/nixos-vps-go-0.2.0-dev.0.tar.gz \
   -C /absolute/path/to/local-module
 go mod edit -replace=github.com/sgomezsal/nixos-vps/sdk/go/nixosvps=/absolute/path/to/local-module/nixosvps
+go mod edit -require=github.com/sgomezsal/nixos-vps/sdk/go/nixosvps@v0.2.0-dev.0
 go mod tidy
 ```
 
