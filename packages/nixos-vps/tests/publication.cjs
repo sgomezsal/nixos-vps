@@ -88,3 +88,22 @@ test('release workflow is manual, gated, artifact-based and grants OIDC only to 
   if(step.uses.startsWith('actions/checkout@'))assert.equal(step.with['persist-credentials'],false);
  }
 });
+test('artifact discovery includes the hidden release directory and excludes unrelated private files',async t=>{
+ // Match the pinned action's glob engine; root's Undici override avoids its
+ // legacy transport vulnerabilities. Discovery here only accesses local fixtures.
+ const glob=require('@actions/glob');
+ const workflow=YAML.parse(fs.readFileSync(path.join(root,'.github/workflows/release.yml'),'utf8'));
+ const upload=workflow.jobs.prepare.steps.find(s=>s.uses?.startsWith('actions/upload-artifact@'));
+ assert.equal(upload.with['include-hidden-files'],true);
+ assert.equal(upload.with['if-no-files-found'],'error');
+ assert.deepEqual(upload.with.path.trim().split('\n'),['.release/manifest.json','.release/nixos-vps-*.tgz']);
+ const tmp=fs.mkdtempSync(path.join(os.tmpdir(),'nixos-vps-artifact-discovery-'));
+ t.after(()=>fs.rmSync(tmp,{recursive:true,force:true}));
+ fs.mkdirSync(path.join(tmp,'.release'));
+ for(const name of ['manifest.json','nixos-vps-0.1.1.tgz','.env','private.key','unrelated.tgz'])fs.writeFileSync(path.join(tmp,'.release',name),'synthetic fixture');
+ fs.writeFileSync(path.join(tmp,'.env'),'synthetic fixture');
+ const patterns=upload.with.path.trim().split('\n').map(p=>path.join(tmp,p)).join('\n');
+ const discover=async includeHidden=>{const g=await glob.create(patterns,{excludeHiddenFiles:!includeHidden,implicitDescendants:false});return (await g.glob()).map(p=>path.relative(tmp,p)).sort();};
+ assert.deepEqual(await discover(false),[],'Reproduce the upload action default that caused the failure');
+ assert.deepEqual(await discover(upload.with['include-hidden-files']),['.release/manifest.json','.release/nixos-vps-0.1.1.tgz']);
+});

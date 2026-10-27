@@ -1,6 +1,6 @@
 # Validation coverage
 
-Last completed full local run: **2026-10-26**. All **44 package tests passed**, with
+Latest package validation run: **2026-10-26**. All **45 package tests passed**, with
 no failures or skipped tests. npm audit and credential scans reported no findings
 in that run.
 
@@ -70,3 +70,10 @@ The complete `release:prepare` command also passed in an independent clean sourc
 snapshot: dependency installation, full validation, tarball generation, publish
 dry run and manifest creation. The acceptance test prepared an artifact locally without publishing or
 accessing Hetzner.
+
+The hidden release-artifact correction was checked with the pinned upload action's
+glob engine: the default excludes the hidden directory, while the explicit setting
+selects only the manifest and release tarball patterns. A clean npm installation,
+45 package tests, independent tarball consumption, npm audit and both workflow
+syntax checks passed. NixOS/VM evidence above predates this workflow correction;
+the corrected hosted artifact transfer still requires a new workflow execution.

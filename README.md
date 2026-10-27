@@ -8,7 +8,7 @@ and installer integrity before creating cloud resources, then installs NixOS ove
 SSH. The IPv4 output resolves after installation and SSH readiness checks complete.
 
 > [!NOTE]
-> **Experimental / pre-release.** Local validation passes: 44 package tests,
+> **Experimental / pre-release.** Local validation passes: 45 package tests,
 > four VM installation checks, NixOS builds and independent tarball-consumer tests.
 > Live Hetzner provisioning has not yet been validated. Version `0.1.0` is available
 > on [npm](https://www.npmjs.com/package/nixos-vps). See
