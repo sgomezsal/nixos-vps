@@ -1,7 +1,7 @@
 # Validation coverage
 
-Latest completed full CI run: **2026-10-27 UTC**, commit `264fc46`. All
-**52 package tests passed**, with
+Release-candidate full CI run: **2026-10-27 UTC**, commit `4314d61`. All
+**53 package tests passed**, with
 no failures or skipped tests. npm audit and credential scans reported no findings
 in that run.
 
@@ -78,8 +78,8 @@ Nix checks reused existing successful VM outputs; no new VM execution is claimed
 The development shell also now ignores ambient provider binaries, preventing an
 older bundled hcloud plugin from overriding the version selected by the SDK. Its
 evaluated shell setting is checked by the publication-scope test.
-This local evidence does not replace the historical full-CI evidence above or
-claim that either fix is already published.
+Both fixes are included in release 0.1.2. The distribution and consumer checks
+below verify the published artifact separately from the initial live installation.
 
 ### Remaining provider-specific checks
 
@@ -92,35 +92,49 @@ claim that either fix is already published.
 
 ## Release evidence
 
+### 0.1.2
+
+The [full CI run](https://github.com/sgomezsal/nixos-vps/actions/runs/40544998325)
+and [prepare/publish run](https://github.com/sgomezsal/nixos-vps/actions/runs/40545033318)
+both passed for commit `4314d61`. Publication used the original validated
+artifact through OIDC with provenance. Local verification and the publication
+job independently confirmed registry availability, the `next` tag and the
+SHA-512 integrity of the downloaded npm tarball.
+
+An independent consumer then installed `nixos-vps@0.1.2` directly from npm.
+Its lockfile points to the registry tarball and matching integrity, and all 20
+installed package files match the original GitHub artifact byte for byte. No
+manual patch remains in the installed package. All 17 runtime and template files
+also match the implementation used for the successful live installation.
+
+TypeScript and local validation passed in that consumer. A real Pulumi preview
+and update, constrained to a no-change plan, reported all seven resources
+unchanged. No server was created, reinstalled, replaced or deleted during this
+release-consumer check. Authenticated SSH readiness and public HTTP were checked
+again on the existing server. This is not a second fresh installation of the
+published artifact.
+
+The exact tarball and source/integrity manifest are attached to the
+[0.1.2 release](https://github.com/sgomezsal/nixos-vps/releases/tag/v0.1.2).
+The npm `latest` tag is separate from the experimental `next` channel;
+use the documented exact version when reproducing these results.
+
+### Earlier evidence
+
 The [0.1.1 release run](https://github.com/sgomezsal/nixos-vps/actions/runs/40441429445)
-prepared the artifact, transferred it between jobs and submitted it through OIDC.
-Its final verification exceeded the old fifty-second window before npm made the
-version visible. The original artifact was subsequently verified locally:
-version 0.1.1, the next tag and downloaded SHA-512 integrity all matched.
-The source run, repository and commit were also checked against its manifest.
+submitted its artifact successfully but exceeded the former fifty-second
+verification window during npm processing. Its original artifact was later
+verified locally and by the
+[verification-only workflow](https://github.com/sgomezsal/nixos-vps/actions/runs/40447258950).
+The [earlier full CI run](https://github.com/sgomezsal/nixos-vps/actions/runs/40446722126)
+passed 52 package tests. Those results remain historical evidence, distinct from
+the 53-test 0.1.2 candidate above.
 
-An independent project installed 0.1.0 directly from npm and imported
-NixosServer successfully. Current local tarball consumption tests also pass.
-The complete release:prepare command previously passed in a clean independent
-snapshot, including full validation, tarball generation, dry run and manifest.
-None of those local tests published or accessed Hetzner.
+## Scope of the results
 
-For the verification recovery change, all 52 package tests, build and declaration
-checks, independent tarball consumption, npm audit and syntax checks for all three
-workflows passed. An injected clock covers delays beyond fifty seconds and the
-bounded deadline without actual waits. Other regressions reject invalid options,
-artifact integrity mismatches and source-run identity mismatches, and check that
-the verify-only workflow has read-only permissions and no publication commands.
-The hidden-artifact regression uses the pinned upload action's glob engine.
-
-The [full CI run](https://github.com/sgomezsal/nixos-vps/actions/runs/40446722126)
-and [verification-only run](https://github.com/sgomezsal/nixos-vps/actions/runs/40447258950)
-both passed for commit `264fc46`, using Ubuntu 24.04 and the Node 24 artifact
-actions. Verification confirmed the published 0.1.1 artifact and the next tag.
-The four VM tests executed in earlier validation; cached successes in subsequent
-runs do not represent new VM executions.
-
-npm audit covers npm dependencies, not a comprehensive NixOS vulnerability review.
-Credential scans cover known patterns and inspected files, rather than every
-possible form of secret. Registry tags are checked separately from immutable
-version and artifact identity; historical verification can allow next to move.
+Nix can reuse successful system and VM derivations. A cached VM result is not a
+new VM execution. npm audit covers npm dependencies, not a comprehensive NixOS
+vulnerability review. Credential scans cover known patterns and inspected files,
+rather than every possible form of secret. Registry tags are mutable distribution
+pointers; exact versions, source commits and artifact integrity are checked
+separately.
