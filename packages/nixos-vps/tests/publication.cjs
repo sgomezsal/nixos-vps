@@ -107,3 +107,18 @@ test('artifact discovery includes the hidden release directory and excludes unre
  assert.deepEqual(await discover(false),[],'Reproduce the upload action default that caused the failure');
  assert.deepEqual(await discover(upload.with['include-hidden-files']),['.release/manifest.json','.release/nixos-vps-0.1.1.tgz']);
 });
+test('verification-only workflow cannot publish and retrieves a version-bound artifact from the original run',()=>{
+ const workflow=YAML.parse(fs.readFileSync(path.join(root,'.github/workflows/verify-release.yml'),'utf8'));
+ assert.deepEqual(Object.keys(workflow.on),['workflow_dispatch']);
+ assert.deepEqual(workflow.permissions,{contents:'read',actions:'read'});
+ const job=workflow.jobs.verify;
+ assert.equal(job.if,"github.ref == 'refs/heads/main'");assert.equal(job.environment,undefined);assert.equal(job.permissions,undefined);
+ const download=job.steps.find(s=>s.uses?.startsWith('actions/download-artifact@'));
+ assert.equal(download.with.name,'npm-release');assert.equal(download.with['run-id'],'${{ inputs.run_id }}');
+ assert.equal(download.with.repository,'${{ github.repository }}');
+ const commands=job.steps.map(s=>s.run||'').join('\n');
+ assert.ok(!/npm (publish|stage|dist-tag)|release:prepare|id-token/.test(commands));
+ assert.match(commands,/validateSourceRun/);assert.match(commands,/EXPECTED_VERSION/);
+ assert.match(commands,/--version-only/);assert.match(commands,/--wait-seconds 600/);
+ for(const step of job.steps.filter(s=>s.uses)){assert.match(step.uses,/^[^@]+@[a-f0-9]{40}$/);if(step.uses.startsWith('actions/checkout@'))assert.equal(step.with['persist-credentials'],false);}
+});

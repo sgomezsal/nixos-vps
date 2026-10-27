@@ -45,3 +45,38 @@ test('successful preparation requests machine-readable dry-run output before wri
  vm.runInNewContext(fs.readFileSync(path.resolve(__dirname,'../../../scripts/release.cjs'),'utf8'),context);
  assert.deepEqual(written,manifest);assert.equal(calls.filter(c=>c[0]==='npm').length,2);
 });
+test('default verification accepts processing longer than the previous fifty-second window',async()=>{
+ let time=0,lookups=0;
+ await verify(manifest,bytes,{now:()=>time,sleep:async ms=>{time+=ms;},fetchImpl:async url=>{
+  if(url.endsWith('.tgz'))return {ok:true,arrayBuffer:async()=>bytes};
+  lookups++;return {ok:true,json:async()=>lookups<8?{versions:{}}:available()};
+ }});
+ assert.equal(lookups,8);assert.equal(time,70000);
+});
+test('verification timeout is bounded and signals pending without reporting publication failure',async()=>{
+ let time=0,calls=0;
+ await assert.rejects(verify(manifest,bytes,{timeoutMs:25000,now:()=>time,sleep:async ms=>{time+=ms;},fetchImpl:async()=>{calls++;return {ok:true,json:async()=>({versions:{}})};}}),error=>error.code==='RELEASE_PENDING'&&/Submission may have succeeded/.test(error.message));
+ assert.equal(time,25000);assert.equal(calls,3);
+});
+test('verification wait arguments reject unsupported values and default to ten minutes',()=>{
+ const {verifyOptions}=require('../../../scripts/release.cjs');
+ assert.deepEqual(verifyOptions([]),{timeoutMs:600000,requireNext:true});
+ assert.deepEqual(verifyOptions(['--wait-seconds','120','--version-only']),{timeoutMs:120000,requireNext:false});
+ for(const args of [['--wait-seconds'],['--wait-seconds','0'],['--wait-seconds','1801'],['--wait-seconds','1.2'],['--wait-seconds',';echo'],['--unknown']])assert.throws(()=>verifyOptions(args));
+});
+test('historical verification allows next to move but still checks the requested artifact bytes',async()=>{
+ const moved={...available(),'dist-tags':{next:'0.2.0'}};
+ assert.equal(publishedState(manifest,moved),'tag-pending');
+ assert.equal(publishedState(manifest,moved,{requireNext:false}),'available');
+ const fetchImpl=async url=>url.endsWith('.tgz')?{ok:true,arrayBuffer:async()=>bytes}:{ok:true,json:async()=>moved};
+ await verify(manifest,bytes,{requireNext:false,fetchImpl});
+ await assert.rejects(verify(manifest,Buffer.from('wrong'),{requireNext:false,fetchImpl}),/Artifact integrity mismatch/);
+});
+test('verification-only recovery binds the artifact to the original repository, run, commit and version',()=>{
+ const {validateSourceRun}=require('../../../scripts/release.cjs');
+ const run={id:123,repository:{full_name:'owner/repo'},head_repository:{full_name:'owner/repo'},head_branch:'main',event:'workflow_dispatch',status:'completed',path:'.github/workflows/release.yml',head_sha:manifest.commit};
+ const options={repository:'owner/repo',runId:'123',version:manifest.version};
+ validateSourceRun(manifest,run,options);
+ for(const change of [{id:124},{head_sha:'b'.repeat(40)},{head_repository:{full_name:'fork/repo'}},{repository:{full_name:'other/repo'}},{path:'.github/workflows/ci.yml'},{head_branch:'other'},{event:'pull_request'},{status:'in_progress'}])assert.throws(()=>validateSourceRun(manifest,{...run,...change},options),/does not match/);
+ assert.throws(()=>validateSourceRun(manifest,run,{...options,version:'0.2.0'}),/does not match/);
+});

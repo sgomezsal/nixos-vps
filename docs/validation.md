@@ -1,6 +1,6 @@
 # Validation coverage
 
-Latest package validation run: **2026-10-26**. All **45 package tests passed**, with
+Latest package validation run: **2026-10-26**. All **51 package tests passed**, with
 no failures or skipped tests. npm audit and credential scans reported no findings
 in that run.
 
@@ -49,31 +49,34 @@ integration testing:
 - Disk serials, device enumeration, firmware and network behavior.
 - Provider update/replacement plans and interrupted-install recovery.
 
-Hosted GitHub Actions passed for commit `909a0d3` on 2026-10-27 UTC:
-[Local validation #3](https://github.com/sgomezsal/nixos-vps/actions/runs/40429289654).
-That run covers the release metadata preparation. The subsequent release
-automation changes require a new hosted run after pushing. npm audit covers npm dependencies;
-NixOS package vulnerability assessment is separate. Credential scans cover known
-patterns and inspected files, rather than every possible form of secret.
+## Release evidence
 
-Version `0.1.0` is available on npm. The optional OIDC release workflow is covered
-by local syntax and policy tests; its external npm trust and GitHub environment
-protections still require configuration and a future hosted execution. Local
-release tests never publish, approve staged packages or change registry tags.
+The [0.1.1 release run](https://github.com/sgomezsal/nixos-vps/actions/runs/40441429445)
+prepared the artifact, transferred it between jobs and submitted it through OIDC.
+Its final verification exceeded the old fifty-second window before npm made the
+version visible. The original artifact was subsequently verified locally:
+version 0.1.1, the next tag and downloaded SHA-512 integrity all matched.
+The source run, repository and commit were also checked against its manifest.
 
-The published `0.1.0` tarball was downloaded and its SHA-512 integrity compared
-with the original local artifact. An independent project also installed the
-package directly from npm and imported `NixosServer` successfully. These checks
-used the public registry without npm account credentials or cloud access.
+An independent project installed 0.1.0 directly from npm and imported
+NixosServer successfully. Current local tarball consumption tests also pass.
+The complete release:prepare command previously passed in a clean independent
+snapshot, including full validation, tarball generation, dry run and manifest.
+None of those local tests published or accessed Hetzner.
 
-The complete `release:prepare` command also passed in an independent clean source
-snapshot: dependency installation, full validation, tarball generation, publish
-dry run and manifest creation. The acceptance test prepared an artifact locally without publishing or
-accessing Hetzner.
+For the verification recovery change, all 51 package tests, build and declaration
+checks, independent tarball consumption, npm audit and syntax checks for all three
+workflows passed. An injected clock covers delays beyond fifty seconds and the
+bounded deadline without actual waits. Other regressions reject invalid options,
+artifact integrity mismatches and source-run identity mismatches, and check that
+the verify-only workflow has read-only permissions and no publication commands.
+The hidden-artifact regression uses the pinned upload action's glob engine.
 
-The hidden release-artifact correction was checked with the pinned upload action's
-glob engine: the default excludes the hidden directory, while the explicit setting
-selects only the manifest and release tarball patterns. A clean npm installation,
-45 package tests, independent tarball consumption, npm audit and both workflow
-syntax checks passed. NixOS/VM evidence above predates this workflow correction;
-the corrected hosted artifact transfer still requires a new workflow execution.
+Hosted execution of the new verification-only workflow and CI for these latest
+changes remain pending. Existing NixOS and VM evidence predates these release-only
+changes; successful cached VM outputs do not represent new VM executions.
+
+npm audit covers npm dependencies, not a comprehensive NixOS vulnerability review.
+Credential scans cover known patterns and inspected files, rather than every
+possible form of secret. Registry tags are checked separately from immutable
+version and artifact identity; historical verification can allow next to move.

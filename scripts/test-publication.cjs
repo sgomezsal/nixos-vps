@@ -8,5 +8,5 @@ assert.deepEqual(fs.readdirSync(path.join(root,'secrets')).sort(),['provisioning
 const lock=JSON.parse(fs.readFileSync(path.join(root,'flake.lock')));assert.deepEqual(Object.keys(lock.nodes.root.inputs).sort(),['disko','flake-utils','nixpkgs']);
 const evaluated=spawnSync('nix',['eval','--impure','--json','--expr','let f=builtins.getFlake '+JSON.stringify(root)+'; in { configurations=builtins.attrNames f.nixosConfigurations; ssh=f.nixosConfigurations.hetzner-cloud.config.services.openssh.enable; }'],{encoding:'utf8',timeout:120000});assert.equal(evaluated.status,0,evaluated.stderr);
 assert.deepEqual(JSON.parse(evaluated.stdout),{configurations:['example','hetzner-cloud'],ssh:true});
-const lint=spawnSync('actionlint',['.github/workflows/ci.yml','.github/workflows/release.yml'],{cwd:root,encoding:'utf8'});assert.equal(lint.status,0,lint.stderr+lint.stdout);
+const lint=spawnSync('actionlint',['.github/workflows/ci.yml','.github/workflows/release.yml','.github/workflows/verify-release.yml'],{cwd:root,encoding:'utf8'});assert.equal(lint.status,0,lint.stderr+lint.stdout);
 console.log('PUBLICATION SCOPE PASS: provisioning-only modules, credentials example, flake inputs and host configurations; pinned workflow syntax valid.');

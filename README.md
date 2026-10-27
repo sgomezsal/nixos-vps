@@ -8,9 +8,9 @@ and installer integrity before creating cloud resources, then installs NixOS ove
 SSH. The IPv4 output resolves after installation and SSH readiness checks complete.
 
 > [!NOTE]
-> **Experimental / pre-release.** Local validation passes: 45 package tests,
+> **Experimental / pre-release.** Local validation passes: 51 package tests,
 > four VM installation checks, NixOS builds and independent tarball-consumer tests.
-> Live Hetzner provisioning has not yet been validated. Version `0.1.0` is available
+> Live Hetzner provisioning has not yet been validated. Version `0.1.1` is available
 > on [npm](https://www.npmjs.com/package/nixos-vps). See
 > [validation coverage](docs/validation.md) for details.
 
@@ -48,7 +48,7 @@ supply the operator's provisioning token.
 Install the published component in a Pulumi project:
 
 ```sh
-npm install --ignore-scripts nixos-vps@0.1.0 @pulumi/pulumi
+npm install --ignore-scripts nixos-vps@0.1.1 @pulumi/pulumi
 ```
 
 The npm package requires the system tools below. For a new project, follow the
@@ -114,7 +114,7 @@ This creates `/tmp/nixos-vps-0.1.1.tgz`.
 The workspace root keeps `private: true` to prevent publishing the monorepo.
 The release package in `packages/nixos-vps` is publishable and defaults to the
 `next` npm tag for experimental releases. These settings do not publish anything
-automatically or control GitHub visibility. Version `0.1.0` is published; local
+automatically or control GitHub visibility. Version `0.1.1` is published; local
 tarball installation remains supported. Registry tags are distribution pointers,
 not stability guarantees.
 

@@ -1,0 +1,72 @@
+name: Verify npm release
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: Original release workflow run ID containing the npm-release artifact
+        type: string
+        required: true
+      version:
+        description: Exact version to verify, for example 0.1.1
+        type: string
+        required: true
+      require_next:
+        description: Also require next to point at this version (disable for historical releases)
+        type: boolean
+        default: false
+permissions:
+  contents: read
+  actions: read
+jobs:
+  verify:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SOURCE_RUN_ID: ${{ inputs.run_id }}
+      EXPECTED_VERSION: ${{ inputs.version }}
+      REQUIRE_NEXT: ${{ inputs.require_next }}
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: cachix/install-nix-action@ba0dd844c9180cbf77aa72a116d6fbc515d0e87b # v27
+        with:
+          install_url: https://releases.nixos.org/nix/nix-2.34.8/install
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      - name: Validate inputs
+        run: |
+          nix develop --command node - <<'JS'
+          if(!/^\d+$/.test(process.env.SOURCE_RUN_ID||''))throw Error('run_id must be a numeric release run ID');
+          if(!/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(process.env.EXPECTED_VERSION||''))throw Error('version must be an exact package version');
+          JS
+      - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        with:
+          name: npm-release
+          path: .release
+          run-id: ${{ inputs.run_id }}
+          repository: ${{ github.repository }}
+          github-token: ${{ github.token }}
+      - name: Match artifact to the original release run
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          nix develop --command node --input-type=module - <<'JS'
+          import {createRequire} from 'node:module';
+          const require=createRequire(import.meta.url);
+          const {readArtifact,validateSourceRun}=require('./scripts/release.cjs');
+          const {manifest}=readArtifact();
+          const r=await fetch(`https://api.github.com/repos/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.SOURCE_RUN_ID}`,{
+            signal:AbortSignal.timeout(15000),headers:{Authorization:`Bearer ${process.env.GITHUB_TOKEN}`}
+          });
+          if(!r.ok)throw Error(`Unable to verify source run (${r.status})`);
+          validateSourceRun(manifest,await r.json(),{repository:process.env.GITHUB_REPOSITORY,runId:process.env.SOURCE_RUN_ID,version:process.env.EXPECTED_VERSION});
+          JS
+      - name: Verify availability and original artifact integrity only
+        run: |
+          nix develop --command bash -euo pipefail <<'SH'
+          args=(--wait-seconds 600)
+          if [ "$REQUIRE_NEXT" != true ]; then args+=(--version-only); fi
+          npm run release:verify -- "${args[@]}"
+          SH

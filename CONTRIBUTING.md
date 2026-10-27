@@ -47,7 +47,7 @@ also be checked through the independent tarball workflow.
 
 ## Release preparation
 
-Version 0.1.0 is already published and cannot be overwritten. For a future release,
+Published versions cannot be overwritten. For a future release,
 choose a new version, update package metadata and the lockfile, and commit the
 changes. Keep the workspace root private. The release package defaults to the
 public npm registry and the experimental `next` tag. Tags do not prove stability;
@@ -97,9 +97,41 @@ A successful publish submission can still be processing. A `0.0.0-stage`
 placeholder is not the requested release. `release:verify` waits for the version
 and `next` tag, compares registry integrity with the prepared manifest, then
 downloads the public tarball and verifies its bytes. It exits unsuccessfully if
-processing remains pending, metadata requests fail or integrity differs.
+processing remains pending, metadata requests fail or integrity differs. The default
+processing wait is ten minutes. To allow up to thirty minutes, use:
+
+```sh
+npm run release:verify -- --wait-seconds 1800
+```
+
+Each metadata request has a bounded timeout. Pending processing is reported as
+`RELEASE_PENDING`, with a recovery instruction in the GitHub job summary. It does
+not mean that the preceding publication submission failed.
 It never republishes, approves a stage or changes a tag. Re-run verification later
 if processing is pending; do not repeat publication or bump a version to bypass it.
+
+For GitHub recovery, use **Actions → Verify npm release → Run workflow** on
+`main`. Enter the original publication's run ID (the number at the end of its
+`/actions/runs/NUMBER` URL) and exact version, for example `0.1.1`. The workflow
+retrieves that run's `npm-release` artifact and checks its repository, workflow,
+branch, commit and version before comparing public npm bytes. It never builds,
+publishes, approves a stage or changes distribution tags. It needs only read
+permissions; no npm credentials, OIDC permission or environment approval.
+
+Leave **require_next** disabled for an older release whose `next` tag may have
+moved. Enable it when verifying the current experimental channel. The original
+publication workflow and local `release:verify` still require `next` by default.
+For equivalent historical verification locally:
+
+```sh
+npm run release:verify -- --version-only
+```
+
+If the original artifact has expired (workflow retention is seven days), restore
+the original saved tarball and manifest locally. Do not rebuild an artifact and
+present it as the original release. Verify-only recovery runs the current code
+from `main`, so push fixes before starting a new recovery run; re-running an old
+job uses that old execution's workflow.
 
 Check npm notifications and the account's Staged Packages tab. If there is an
 explicit staged submission, review it before approving with 2FA. A placeholder
@@ -141,3 +173,11 @@ Only the publishing job requests `id-token: write`; preparation has read-only
 repository permissions. The regular validation workflow never publishes.
 OIDC publishing and environment protections require external setup and have not
 been exercised by local tests. Neither workflow accesses Hetzner.
+
+### Distribution channels
+
+`next` and `latest` are independent npm tags. Publishing with `--tag next` does
+not move `latest`. The default package page and an unqualified installation can
+therefore show an older version. Use an exact version such as `nixos-vps@0.1.1`
+or the `next` channel intentionally. Changing `latest` is a separate release
+decision, not a workaround for processing delays.
