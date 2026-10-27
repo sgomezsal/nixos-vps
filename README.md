@@ -8,10 +8,11 @@ and installer integrity before creating cloud resources, then installs NixOS ove
 SSH. The IPv4 output resolves after installation and SSH readiness checks complete.
 
 > [!NOTE]
-> **Experimental / pre-release.** Local validation passes: 38 package tests,
+> **Experimental / pre-release.** Local validation passes: 44 package tests,
 > four VM installation checks, NixOS builds and independent tarball-consumer tests.
-> Live Hetzner provisioning has not yet been validated. Use the local tarball until
-> the first npm release. See [validation coverage](docs/validation.md) for details.
+> Live Hetzner provisioning has not yet been validated. Version `0.1.0` is available
+> on [npm](https://www.npmjs.com/package/nixos-vps). See
+> [validation coverage](docs/validation.md) for details.
 
 > [!WARNING]
 > NixOS installation repartitions and formats the target server disk. Use this
@@ -44,6 +45,16 @@ supply the operator's provisioning token.
 
 ## Get started
 
+Install the published component in a Pulumi project:
+
+```sh
+npm install --ignore-scripts nixos-vps@0.1.0 @pulumi/pulumi
+```
+
+The npm package requires the system tools below. For a new project, follow the
+[quickstart](packages/nixos-vps/README.md#quickstart), including initialization
+and validation before deployment.
+
 Use Bash on **x86_64 Linux**. Choose the setup that matches how you obtain the
 package:
 
@@ -53,7 +64,7 @@ package:
   installer tools; you do not need to install those separately. Nix itself must
   already be installed. Cloning also requires Git beforehand; downloading a
   source archive is an alternative.
-- **From a package tarball in an independent project:** provide Node.js 22+/npm,
+- **From npm or a tarball in an independent project:** provide Node.js 22+/npm,
   Nix 2.24+ with flakes enabled, OpenSSH 9+, Git and Pulumi CLI v3 through your
   own environment. Installing the npm package does not create a Nix development
   shell or install these system tools.
@@ -103,8 +114,9 @@ This creates `/tmp/nixos-vps-0.1.0.tgz`.
 The workspace root keeps `private: true` to prevent publishing the monorepo.
 The release package in `packages/nixos-vps` is publishable and defaults to the
 `next` npm tag for experimental releases. These settings do not publish anything
-automatically or control GitHub visibility. No npm release has been made yet;
-local tarball installation remains supported.
+automatically or control GitHub visibility. Version `0.1.0` is published; local
+tarball installation remains supported. Registry tags are distribution pointers,
+not stability guarantees.
 
 See [release preparation](CONTRIBUTING.md#release-preparation) for the manual
 validation and publication steps.

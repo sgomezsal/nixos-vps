@@ -47,42 +47,97 @@ also be checked through the independent tarball workflow.
 
 ## Release preparation
 
-The workspace root is intentionally private; only `packages/nixos-vps` is
-publishable. The package defaults to the public npm registry and the `next` tag
-because live Hetzner provisioning remains unverified. Publication is manual;
-CI has no publishing step or npm credentials.
+Version 0.1.0 is already published and cannot be overwritten. For a future release,
+choose a new version, update package metadata and the lockfile, and commit the
+changes. Keep the workspace root private. The release package defaults to the
+public npm registry and the experimental `next` tag. Tags do not prove stability;
+the registry may also assign `latest` during a first publication.
 
-Before a release:
+### Prepare one inspected artifact
 
-1. Run `./scripts/validate.sh` and require a successful GitHub Actions run for the
-   exact commit being released.
-2. Confirm the version, npm name availability and the publishing account's rights.
-   A registry 404 is not a reservation or a guarantee that a name is publishable.
-3. Build and inspect the artifact from the repository root:
+From a clean checkout on x86_64 Linux:
 
-   ```sh
-   npm run pack:component
-   npm publish /tmp/nixos-vps-0.1.0.tgz --dry-run --ignore-scripts --access public --tag next --registry=https://registry.npmjs.org/
-   ```
+```sh
+nix develop
+npm run release:prepare
+```
 
-   The dry run does not upload the package. Independent tarball consumption and
-   dry-run package contents are also checked by `npm test`.
-4. Only when intentionally publishing, authenticate with npm and publish that
-   inspected artifact:
+This command runs the full validation suite, including `npm ci --ignore-scripts`,
+builds the tarball, and performs an npm publish dry run. Each failure stops the
+process. It writes the tarball and a manifest containing its version, source
+commit and SHA-512 integrity into the ignored `.release/` directory. It does not
+publish, log in or provision cloud resources. Keep the manifest with the artifact.
+Validation may reuse successful Nix store builds and VM checks.
 
-   ```sh
-   npm login --registry=https://registry.npmjs.org/
-   npm whoami --registry=https://registry.npmjs.org/
-   npm publish /tmp/nixos-vps-0.1.0.tgz --access public --tag next --registry=https://registry.npmjs.org/
-   ```
+### Manual publication
 
-   Complete any authentication or two-factor prompts locally. Never commit npm
-   tokens or place them in command arguments. Do not publish all workspaces.
-5. Verify the registry version and tarball integrity, tag the released commit and
-   create matching GitHub release notes. Update the README's unpublished status
-   only after the release is confirmed. Consumers can then install
-   `nixos-vps@next` or pin `nixos-vps@0.1.0`.
+`npm whoami` confirms the session, not permission to publish. npm also requires
+account 2FA for interactive publishing. Configure 2FA in your npm account, save
+recovery codes securely and authenticate locally. Do not share codes or tokens.
 
-Replace the example version and tarball path for subsequent releases. Removing
-`private: true` from the package enables an explicit publish command; it does not
-publish automatically. Keep the workspace root private.
+```sh
+npm login --registry=https://registry.npmjs.org/
+npm whoami --registry=https://registry.npmjs.org/
+```
+
+Review the artifact and manifest and require successful CI for their exact commit.
+Only when intentionally publishing, replace VERSION below with that version:
+
+```sh
+npm publish .release/nixos-vps-VERSION.tgz --ignore-scripts --access public --tag next --registry=https://registry.npmjs.org/
+npm run release:verify
+```
+
+Complete npm's interactive verification. An E403 about 2FA means authentication
+was insufficient; do not change the package version to fix authentication.
+
+### Confirm availability before announcing
+
+A successful publish submission can still be processing. A `0.0.0-stage`
+placeholder is not the requested release. `release:verify` waits for the version
+and `next` tag, compares registry integrity with the prepared manifest, then
+downloads the public tarball and verifies its bytes. It exits unsuccessfully if
+processing remains pending, metadata requests fail or integrity differs.
+It never republishes, approves a stage or changes a tag. Re-run verification later
+if processing is pending; do not repeat publication or bump a version to bypass it.
+
+Check npm notifications and the account's Staged Packages tab. If there is an
+explicit staged submission, review it before approving with 2FA. A placeholder
+alone does not prove manual approval is required. If no action is shown and
+processing remains unresolved, contact npm support. For CLI staging inspection,
+use npm 11.15.0 or newer; it is not required by the component itself.
+
+After verification, create the matching Git tag and GitHub release from the
+manifest commit, and update consumer installation instructions. Do not announce
+availability based only on CLI submission success. See npm's
+[2FA requirements](https://docs.npmjs.com/requiring-2fa-for-package-publishing-and-settings-modification/),
+[staged publishing](https://docs.npmjs.com/staged-publishing/) and
+[trusted publishing](https://docs.npmjs.com/trusted-publishers/).
+
+### Optional manual GitHub workflow with OIDC
+
+`.github/workflows/release.yml` runs only through **Run workflow** on `main`.
+It defaults to preparation only. Its preparation job runs the full suite and
+uploads the exact tarball and manifest. The publishing job consumes that artifact,
+checks its commit and integrity and refuses an already published version.
+It does not rebuild the package. Publishing uses a pinned npm CLI supporting
+OIDC and provenance, followed by registry verification.
+
+Before enabling publishing, configure these external settings yourself:
+
+1. Create the GitHub environment `npm`, restrict it to `main` and configure a
+   required reviewer so publishing requires approval. Verify those protection
+   settings; a workflow file cannot enforce them by itself.
+2. In npm's Trusted Publisher settings for `nixos-vps`, select GitHub Actions:
+   user `sgomezsal`, repository `nixos-vps`, workflow `release.yml`, environment
+   `npm`. Allow direct publishing. No npm token is needed in GitHub secrets.
+3. Set the GitHub repository variable `NPM_RELEASE_ENABLED` to `true` only after
+   the protection and trust settings are configured. Leave it unset to keep the
+   publishing job disabled.
+4. For a new committed version, manually run the workflow on `main`, selecting
+   `publish: true`, then review and approve the environment job.
+
+Only the publishing job requests `id-token: write`; preparation has read-only
+repository permissions. The regular validation workflow never publishes.
+OIDC publishing and environment protections require external setup and have not
+been exercised by local tests. Neither workflow accesses Hetzner.

@@ -12,7 +12,9 @@
     "test:preflight": "node scripts/test-preflight.cjs",
     "test:secrets": "node scripts/test-sops.cjs",
     "validate:clean": "node scripts/validate-clean.cjs",
-    "pack:component": "npm pack --workspace nixos-vps --pack-destination /tmp"
+    "pack:component": "npm pack --workspace nixos-vps --pack-destination /tmp",
+    "release:prepare": "node scripts/release.cjs prepare",
+    "release:verify": "node scripts/release.cjs verify"
   },
   "devDependencies": {
     "@types/node": "^22",

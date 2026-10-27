@@ -43,3 +43,6 @@ result-*
 # Repository-only validation/build artifacts.
 packages/*/lib/
 .validation/
+
+# Prepared release tarball and integrity manifest.
+.release/

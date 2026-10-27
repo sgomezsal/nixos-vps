@@ -1,0 +1,76 @@
+name: Prepare or publish npm release
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish the validated artifact (requires configured npm trust and environment approval)
+        type: boolean
+        default: false
+        required: true
+permissions:
+  contents: read
+concurrency:
+  group: npm-release
+  cancel-in-progress: false
+jobs:
+  prepare:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: cachix/install-nix-action@ba0dd844c9180cbf77aa72a116d6fbc515d0e87b # v27
+        with:
+          install_url: https://releases.nixos.org/nix/nix-2.34.8/install
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      - run: nix develop --command npm run release:prepare
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: npm-release
+          path: .release/*
+          if-no-files-found: error
+          retention-days: 7
+  publish:
+    needs: prepare
+    if: inputs.publish && vars.NPM_RELEASE_ENABLED == 'true'
+    environment: npm
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: cachix/install-nix-action@ba0dd844c9180cbf77aa72a116d6fbc515d0e87b # v27
+        with:
+          install_url: https://releases.nixos.org/nix/nix-2.34.8/install
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        with:
+          name: npm-release
+          path: .release
+      - name: Check commit, integrity and version availability
+        run: |
+          nix develop --command node --input-type=module - <<'JS'
+          import {createRequire} from 'node:module';
+          const require=createRequire(import.meta.url);
+          const {manifest}=require('./scripts/release.cjs').readArtifact();
+          if(manifest.commit!==process.env.GITHUB_SHA)throw Error('Artifact commit mismatch');
+          const local=require('./packages/nixos-vps/package.json');
+          if(local.version!==manifest.version)throw Error('Artifact version mismatch');
+          const r=await fetch('https://registry.npmjs.org/nixos-vps',{signal:AbortSignal.timeout(15000)});
+          if(!r.ok)throw Error('Cannot confirm registry version availability');
+          if((await r.json()).versions?.[manifest.version])throw Error('Version already exists; do not republish');
+          JS
+      - name: Publish the inspected artifact with OIDC and provenance
+        run: |
+          nix develop --command bash -euo pipefail <<'SH'
+          artifact=$(node -p 'require("./.release/manifest.json").filename')
+          npm exec --yes --package=npm@11.15.0 -- npm publish ".release/$artifact" --ignore-scripts --access public --tag next --provenance --registry=https://registry.npmjs.org/
+          SH
+      - name: Confirm registry availability and downloaded integrity
+        run: nix develop --command npm run release:verify

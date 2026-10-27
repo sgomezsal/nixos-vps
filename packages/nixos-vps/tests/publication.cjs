@@ -60,3 +60,26 @@ test('provisioning credential example contains only the documented placeholder',
  assert.deepEqual(lines,['HCLOUD_TOKEN=replace-with-a-hetzner-project-token']);
  const metadata=JSON.parse(fs.readFileSync(path.join(root,'packages/nixos-vps/package.json')));assert.equal(metadata.name,'nixos-vps');assert.deepEqual(Object.keys(metadata.bin),['nixos-vps']);assert.ok(!metadata.files.includes('secrets'));
 });
+test('release workflow is manual, gated, artifact-based and grants OIDC only to publishing',()=>{
+ const workflow=YAML.parse(fs.readFileSync(path.join(root,'.github/workflows/release.yml'),'utf8'));
+ assert.deepEqual(Object.keys(workflow.on),['workflow_dispatch']);
+ assert.equal(workflow.on.workflow_dispatch.inputs.publish.default,false);
+ assert.deepEqual(workflow.permissions,{contents:'read'});
+ const {prepare,publish}=workflow.jobs;
+ assert.equal(prepare.if,"github.ref == 'refs/heads/main'");
+ assert.equal(publish.needs,'prepare');assert.equal(publish.environment,'npm');
+ assert.equal(publish.if,"inputs.publish && vars.NPM_RELEASE_ENABLED == 'true'");
+ assert.deepEqual(publish.permissions,{contents:'read','id-token':'write'});
+ assert.ok(prepare.steps.some(s=>s.run==='nix develop --command npm run release:prepare'));
+ assert.ok(prepare.steps.some(s=>s.uses?.startsWith('actions/upload-artifact@')));
+ assert.ok(publish.steps.some(s=>s.uses?.startsWith('actions/download-artifact@')));
+ assert.ok(publish.steps.some(s=>s.run==='nix develop --command npm run release:verify'));
+ const commands=publish.steps.map(s=>s.run||'').join('\n');
+ assert.match(commands,/readArtifact/);assert.match(commands,/manifest.commit!==process.env.GITHUB_SHA/);
+ assert.match(commands,/Version already exists/);assert.match(commands,/--provenance/);
+ assert.ok(!commands.includes('npm pack'));assert.ok(!JSON.stringify(workflow).includes('${{ secrets.'));
+ for(const job of [prepare,publish])for(const step of job.steps.filter(s=>s.uses)){
+  assert.match(step.uses,/^[^@]+@[a-f0-9]{40}$/);
+  if(step.uses.startsWith('actions/checkout@'))assert.equal(step.with['persist-credentials'],false);
+ }
+});
