@@ -1,12 +1,13 @@
 {
   "name": "nixos-vps",
   "version": "0.1.0",
-  "private": true,
   "description": "A Pulumi component for provisioning and bootstrapping NixOS on Hetzner Cloud",
   "license": "MIT",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
-  "bin": { "nixos-vps": "scripts/cli.cjs" },
+  "bin": {
+    "nixos-vps": "scripts/cli.cjs"
+  },
   "files": [
     "lib",
     "scripts",
@@ -30,5 +31,31 @@
     "@pulumi/command": "^1.2.1",
     "@pulumi/hcloud": "^1.32.0",
     "yaml": "^2.9.1"
+  },
+  "author": {
+    "name": "Santiago Gomez Salazar",
+    "email": "contact@sgomezsal.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sgomezsal/nixos-vps.git",
+    "directory": "packages/nixos-vps"
+  },
+  "homepage": "https://github.com/sgomezsal/nixos-vps#readme",
+  "bugs": {
+    "url": "https://github.com/sgomezsal/nixos-vps/issues"
+  },
+  "keywords": [
+    "nixos",
+    "pulumi",
+    "hetzner",
+    "nixos-anywhere",
+    "disko",
+    "infrastructure-as-code"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/",
+    "tag": "next"
   }
 }

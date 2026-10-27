@@ -16,6 +16,11 @@ function run(command, args, options = {}) {
 try {
   const [artifact] = JSON.parse(run("npm", ["pack", "--workspace", "nixos-vps", "--ignore-scripts", "--json", "--pack-destination", temporary]));
   const files = artifact.files.map(file => file.path);
+  // Exercise npm's release preparation against the exact artifact, without uploading.
+  const release = JSON.parse(run('npm', ['publish', path.join(temporary, artifact.filename), '--dry-run', '--ignore-scripts', '--json', '--registry=https://registry.npmjs.org/'], {cwd:temporary}));
+  assert.equal(release.name, 'nixos-vps');
+  assert.equal(release.version, require('../packages/nixos-vps/package.json').version);
+  assert.deepEqual(release.files.map(file=>file.path).sort(), [...files].sort());
   for (const required of ["lib/index.js", "lib/index.d.ts", "scripts/runner.cjs", "README.md", "LICENSE", "templates/index.ts", "templates/nixos/flake.lock", "templates/nixos/base.nix", "templates/nixos/disk-config.nix", "templates/nixos/secure-installer.nix", "templates/nixos/ports.json", "scripts/cli.cjs", "scripts/project.cjs", "scripts/ignore-rules.cjs"]) assert.ok(files.includes(required), required);
   assert.ok(files.every(file => /^(lib\/|scripts\/|templates\/|README.md$|LICENSE$|package.json$)/.test(file)), files.join("\n"));
   assert.ok(files.every(file => !/(?:^|\/)secrets\//.test(file) && !file.endsWith(".pub") && !file.endsWith(".env")), "Fixture keys and operator credential examples must not enter the package");
@@ -25,6 +30,11 @@ try {
   run("npm", ["install", "--ignore-scripts", "--no-audit", "--no-fund", path.join(temporary, artifact.filename), `typescript@${typescript}`, `@types/node@${nodeTypes}`], { cwd: temporary });
   const installed = path.join(temporary, "node_modules/nixos-vps");
   assert.ok(!fs.lstatSync(installed).isSymbolicLink());
+  const metadata = JSON.parse(fs.readFileSync(path.join(installed, 'package.json')));
+  assert.equal(metadata.private, undefined);
+  assert.equal(metadata.publishConfig.tag, 'next');
+  assert.equal(metadata.repository.directory, 'packages/nixos-vps');
+  assert.equal(metadata.author.email, 'contact@sgomezsal.com');
   assert.equal(fs.existsSync(path.join(installed,"templates/nixos/admin.pub")),false);
   run(path.join(temporary, "node_modules/.bin/nixos-vps"), ["init", "--stack", "offline", "--key-directory", path.join(keyDirectory,"identity"), "--location", "fsn1", "--server-type", "cpx32", "--ports", "80,8080"], {cwd:temporary});
   const identityBefore = fs.readFileSync(path.join(keyDirectory,"identity/host"));

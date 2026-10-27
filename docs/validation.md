@@ -8,7 +8,7 @@ in that run.
 
 | Area | Coverage | Entry point |
 | --- | --- | --- |
-| Package | Build, declarations, CJS/ESM imports, 20-file tarball and an independent consumer | `npm test` |
+| Package | Build, declarations, CJS/ESM imports, 20-file tarball, npm publish dry run and an independent consumer | `npm test` |
 | CLI | Key generation, repeat initialization, rollback, read-only validation and explicit port fixes | `npm test` and `npm run test:preflight` |
 | NixOS | Baseline and example builds; BIOS, UEFI, web-example and consumer-template installation checks | Direct builds below; `./scripts/validate.sh` |
 | SSH | Pinned host identity, unsafe policy rejection and effective generated configuration | `scripts/test-ssh-identity.cjs`, `scripts/test-ssh-policy.cjs` |
@@ -48,7 +48,9 @@ integration testing:
 - Disk serials, device enumeration, firmware and network behavior.
 - Provider update/replacement plans and interrupted-install recovery.
 
-A successful hosted GitHub Actions run is pending after pinning the CI Nix
-installer to a version supported by preflight. npm audit covers npm dependencies;
+Hosted GitHub Actions passed for commit `4ff3f2c` on 2026-10-27 UTC:
+[Local validation #2](https://github.com/sgomezsal/nixos-vps/actions/runs/40424973620).
+That run predates the npm release metadata changes; those changes require a new
+hosted run after pushing. npm audit covers npm dependencies;
 NixOS package vulnerability assessment is separate. Credential scans cover known
 patterns and inspected files, rather than every possible form of secret.

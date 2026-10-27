@@ -3,6 +3,14 @@
 Installation formats the selected server disk. Review the NixOS and disko
 configuration before deployment, and keep backups independently of Pulumi state.
 
+## Reporting a vulnerability
+
+Email [contact@sgomezsal.com](mailto:contact@sgomezsal.com) to report a suspected
+vulnerability privately. Include affected versions, a description of the impact
+and minimal reproduction steps. Do not send credentials, private keys, Pulumi
+state exports or unredacted logs, and do not open a public issue with exploit
+details before coordination.
+
 ## Credentials and keys
 
 Supply Hetzner credentials through `HCLOUD_TOKEN` or a configured Pulumi provider.

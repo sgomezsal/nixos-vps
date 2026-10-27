@@ -34,9 +34,18 @@ test("CI installs an explicit Nix release accepted by the actual tool preflight"
  assert.throws(()=>checkTools(execute("2.22.1")),/Nix >=2.24/);
  assert.match(installer.with.extra_nix_config,/experimental-features\s*=.*nix-command.*flakes/);
 });
-test('review package stays private and does not gain publishing or deployment lifecycle hooks',()=>{
+test('only the release package is publishable, with public metadata and no automatic publishing or deployment hooks',()=>{
  const metadata=JSON.parse(fs.readFileSync(path.join(root,'packages/nixos-vps/package.json')));
- assert.equal(metadata.private,true);for(const name of ['publish','prepublish','postpublish','postinstall','install'])assert.equal(metadata.scripts[name],undefined);
+ assert.equal(JSON.parse(fs.readFileSync(path.join(root,'package.json'))).private,true);
+ assert.equal(metadata.private,undefined);
+ assert.deepEqual(metadata.publishConfig,{access:'public',registry:'https://registry.npmjs.org/',tag:'next'});
+ assert.deepEqual(metadata.repository,{type:'git',url:'git+https://github.com/sgomezsal/nixos-vps.git',directory:'packages/nixos-vps'});
+ assert.equal(metadata.homepage,'https://github.com/sgomezsal/nixos-vps#readme');
+ assert.equal(metadata.bugs.url,'https://github.com/sgomezsal/nixos-vps/issues');
+ assert.equal(metadata.author.email,'contact@sgomezsal.com');
+ assert.ok(metadata.keywords.includes('pulumi') && metadata.keywords.includes('nixos'));
+ assert.match(fs.readFileSync(path.join(root,'SECURITY.md'),'utf8'),/mailto:contact@sgomezsal\.com/);
+ for(const name of ['publish','prepublish','postpublish','postinstall','install'])assert.equal(metadata.scripts[name],undefined);
  const cli=fs.readFileSync(path.join(root,'packages/nixos-vps/scripts/cli.cjs'),'utf8');assert.ok(!/pulumi (up|preview|destroy)/.test(cli));
 });
 test('repository identity is a public-only example fixture that consumers must replace',()=>{

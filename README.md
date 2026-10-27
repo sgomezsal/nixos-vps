@@ -100,9 +100,14 @@ npm run pack:component
 
 This creates `/tmp/nixos-vps-0.1.0.tgz`.
 
-Both the workspace root and `packages/nixos-vps/package.json` currently set
-`private: true`. npm publication is intentionally disabled during pre-release
-review; local tarball installation is supported.
+The workspace root keeps `private: true` to prevent publishing the monorepo.
+The release package in `packages/nixos-vps` is publishable and defaults to the
+`next` npm tag for experimental releases. These settings do not publish anything
+automatically or control GitHub visibility. No npm release has been made yet;
+local tarball installation remains supported.
+
+See [release preparation](CONTRIBUTING.md#release-preparation) for the manual
+validation and publication steps.
 
 ## Documentation
 

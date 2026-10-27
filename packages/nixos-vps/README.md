@@ -335,3 +335,9 @@ copies the packaged templates/nixos directory into your project as nixos/.
 The repository hosts import the same base and disk files that ship in the package.
 Tests check that their initial settings agree. Your generated project is an
 independent copy and can be customized without editing the package repository.
+
+## Security reports
+
+Report suspected vulnerabilities privately to [contact@sgomezsal.com](mailto:contact@sgomezsal.com).
+Do not include credentials, private keys, state exports or unredacted logs. For the
+security model, see [SECURITY.md](https://github.com/sgomezsal/nixos-vps/blob/main/SECURITY.md).
