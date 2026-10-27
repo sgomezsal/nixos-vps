@@ -11,7 +11,7 @@ SSH. The IPv4 output resolves after installation and SSH readiness checks comple
 > **Experimental / pre-release.** Local validation passes: 52 package tests,
 > four VM installation checks, NixOS builds and independent tarball-consumer tests.
 > Live Hetzner provisioning has not yet been validated. Version `0.1.1` is available
-> on [npm](https://www.npmjs.com/package/nixos-vps). See
+> on [npm](https://www.npmjs.com/package/nixos-vps/v/0.1.1). See
 > [validation coverage](docs/validation.md) for details.
 
 > [!WARNING]

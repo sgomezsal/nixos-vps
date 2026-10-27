@@ -1,6 +1,7 @@
 # Validation coverage
 
-Latest package validation run: **2026-10-26**. All **52 package tests passed**, with
+Latest completed full CI run: **2026-10-27 UTC**, commit `264fc46`. All
+**52 package tests passed**, with
 no failures or skipped tests. npm audit and credential scans reported no findings
 in that run.
 
@@ -72,10 +73,12 @@ artifact integrity mismatches and source-run identity mismatches, and check that
 the verify-only workflow has read-only permissions and no publication commands.
 The hidden-artifact regression uses the pinned upload action's glob engine.
 
-The [verification-only recovery run](https://github.com/sgomezsal/nixos-vps/actions/runs/40445516720)
-passed for 0.1.1. Hosted execution of the subsequent Node 24 artifact-action and
-Ubuntu 24.04 maintenance changes remains pending. Existing NixOS and VM evidence predates these release-only
-changes; successful cached VM outputs do not represent new VM executions.
+The [full CI run](https://github.com/sgomezsal/nixos-vps/actions/runs/40446722126)
+and [verification-only run](https://github.com/sgomezsal/nixos-vps/actions/runs/40447258950)
+both passed for commit `264fc46`, using Ubuntu 24.04 and the Node 24 artifact
+actions. Verification confirmed the published 0.1.1 artifact and the next tag.
+The four VM tests executed in earlier validation; cached successes in subsequent
+runs do not represent new VM executions.
 
 npm audit covers npm dependencies, not a comprehensive NixOS vulnerability review.
 Credential scans cover known patterns and inspected files, rather than every

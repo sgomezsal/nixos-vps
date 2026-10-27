@@ -4,7 +4,7 @@ A TypeScript Pulumi component for provisioning a fresh x86_64 NixOS server on
 Hetzner Cloud. It creates the server, SSH key registration and firewall, installs
 NixOS from a locked flake, and returns its IP after readiness checks.
 
-Version `0.1.1` is available on [npm](https://www.npmjs.com/package/nixos-vps).
+Version `0.1.1` is available on [npm](https://www.npmjs.com/package/nixos-vps/v/0.1.1).
 This is an experimental release: local validation passes; actual Hetzner
 provisioning remains untested.
 
