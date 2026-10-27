@@ -109,7 +109,7 @@ Build a tarball:
 npm run pack:component
 ```
 
-This creates `/tmp/nixos-vps-0.1.0.tgz`.
+This creates `/tmp/nixos-vps-0.1.1.tgz`.
 
 The workspace root keeps `private: true` to prevent publishing the monorepo.
 The release package in `packages/nixos-vps` is publishable and defaults to the

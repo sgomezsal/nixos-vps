@@ -38,6 +38,11 @@ test('only the release package is publishable, with public metadata and no autom
  const metadata=JSON.parse(fs.readFileSync(path.join(root,'packages/nixos-vps/package.json')));
  assert.equal(JSON.parse(fs.readFileSync(path.join(root,'package.json'))).private,true);
  assert.equal(metadata.private,undefined);
+ const lock=JSON.parse(fs.readFileSync(path.join(root,"package-lock.json")));
+ assert.equal(JSON.parse(fs.readFileSync(path.join(root,"examples/hetzner/package.json"))).dependencies["nixos-vps"],metadata.version);
+ assert.equal(lock.packages["packages/nixos-vps"].version,metadata.version);
+ assert.equal(lock.packages["examples/hetzner"].dependencies["nixos-vps"],metadata.version);
+ assert.equal(lock.packages["examples/hetzner/node_modules/nixos-vps"],undefined,"Example must use the local release workspace");
  assert.deepEqual(metadata.publishConfig,{access:'public',registry:'https://registry.npmjs.org/',tag:'next'});
  assert.deepEqual(metadata.repository,{type:'git',url:'git+https://github.com/sgomezsal/nixos-vps.git',directory:'packages/nixos-vps'});
  assert.equal(metadata.homepage,'https://github.com/sgomezsal/nixos-vps#readme');
