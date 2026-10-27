@@ -1,6 +1,6 @@
 # Validation coverage
 
-Latest package validation run: **2026-10-26**. All **51 package tests passed**, with
+Latest package validation run: **2026-10-26**. All **52 package tests passed**, with
 no failures or skipped tests. npm audit and credential scans reported no findings
 in that run.
 
@@ -64,7 +64,7 @@ The complete release:prepare command previously passed in a clean independent
 snapshot, including full validation, tarball generation, dry run and manifest.
 None of those local tests published or accessed Hetzner.
 
-For the verification recovery change, all 51 package tests, build and declaration
+For the verification recovery change, all 52 package tests, build and declaration
 checks, independent tarball consumption, npm audit and syntax checks for all three
 workflows passed. An injected clock covers delays beyond fifty seconds and the
 bounded deadline without actual waits. Other regressions reject invalid options,
@@ -72,8 +72,9 @@ artifact integrity mismatches and source-run identity mismatches, and check that
 the verify-only workflow has read-only permissions and no publication commands.
 The hidden-artifact regression uses the pinned upload action's glob engine.
 
-Hosted execution of the new verification-only workflow and CI for these latest
-changes remain pending. Existing NixOS and VM evidence predates these release-only
+The [verification-only recovery run](https://github.com/sgomezsal/nixos-vps/actions/runs/40445516720)
+passed for 0.1.1. Hosted execution of the subsequent Node 24 artifact-action and
+Ubuntu 24.04 maintenance changes remains pending. Existing NixOS and VM evidence predates these release-only
 changes; successful cached VM outputs do not represent new VM executions.
 
 npm audit covers npm dependencies, not a comprehensive NixOS vulnerability review.

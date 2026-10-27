@@ -28,6 +28,11 @@ It also evaluates and builds NixOS, runs VM checks, checks SSH behavior and
 exercises the Pulumi engine against local substitute providers. Allow time and
 disk space for Nix builds; cached outputs may be reused.
 
+Hosted jobs target `ubuntu-24.04` deliberately. The pinned artifact actions use
+Node.js 24; this is separate from the Node.js 22 environment supplied by Nix for
+the package itself. Review runtime requirements and artifact compatibility when
+upgrading actions, and keep their full commit SHA pins.
+
 ## Changes and bug reports
 
 Add regression coverage when fixing a functional or security defect. Keep examples

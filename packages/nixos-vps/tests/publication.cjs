@@ -89,9 +89,8 @@ test('release workflow is manual, gated, artifact-based and grants OIDC only to 
  }
 });
 test('artifact discovery includes the hidden release directory and excludes unrelated private files',async t=>{
- // Match the pinned action's glob engine; root's Undici override avoids its
- // legacy transport vulnerabilities. Discovery here only accesses local fixtures.
- const glob=require('@actions/glob');
+ // Match the pinned upload action's ESM glob engine using local fixtures only.
+ const glob=await import('@actions/glob');
  const workflow=YAML.parse(fs.readFileSync(path.join(root,'.github/workflows/release.yml'),'utf8'));
  const upload=workflow.jobs.prepare.steps.find(s=>s.uses?.startsWith('actions/upload-artifact@'));
  assert.equal(upload.with['include-hidden-files'],true);
@@ -121,4 +120,23 @@ test('verification-only workflow cannot publish and retrieves a version-bound ar
  assert.match(commands,/validateSourceRun/);assert.match(commands,/EXPECTED_VERSION/);
  assert.match(commands,/--version-only/);assert.match(commands,/--wait-seconds 600/);
  for(const step of job.steps.filter(s=>s.uses)){assert.match(step.uses,/^[^@]+@[a-f0-9]{40}$/);if(step.uses.startsWith('actions/checkout@'))assert.equal(step.with['persist-credentials'],false);}
+});
+test('hosted jobs pin Ubuntu 24.04 and approved Node 24 artifact actions with strict download integrity',()=>{
+ const approved={
+  'actions/upload-artifact':'cf430e030ddbb5b0abf93d22962f4752f3646cd9',
+  'actions/download-artifact':'9000827ccba6bdab643e8b6fd33ac0654aef8333',
+ };
+ for(const file of ['ci.yml','release.yml','verify-release.yml']){
+  const workflow=YAML.parse(fs.readFileSync(path.join(root,'.github/workflows',file),'utf8'));
+  for(const job of Object.values(workflow.jobs)){
+   assert.equal(job['runs-on'],'ubuntu-24.04');
+   for(const step of job.steps.filter(s=>s.uses)){
+    const [action,sha]=step.uses.split('@');
+    if(approved[action])assert.equal(sha,approved[action],'Review action runtime and compatibility when upgrading');
+    if(action==='actions/upload-artifact')assert.equal(step.with.archive,true,'Keep the manifest and tarball together in a ZIP artifact');
+    if(action==='actions/download-artifact')assert.equal(step.with['digest-mismatch'],'error');
+   }
+  }
+ }
+ assert.equal(require('../../../package.json').devDependencies['@actions/glob'],'0.6.1','Match the pinned upload action glob engine');
 });
