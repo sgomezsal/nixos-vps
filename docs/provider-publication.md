@@ -14,6 +14,120 @@ provenance; actual registry downloads matched the candidate. See
 processing delay and verification-only retry. This did not access Hetzner or
 change a VPS. The publication gate is disabled again.
 
+## Stable 0.2.0 preparation
+
+Review date: **2026-10-28**, based on source commit `53c62a0` and its
+[successful CI run](https://github.com/sgomezsal/nixos-vps/actions/runs/40735635470).
+`0.2.0` is a proposed release, not a prepared or approved stable artifact.
+Published versions and tags remain unchanged. The local workflow changes below
+have not been dispatched.
+
+Fresh creation tests through Python and Go are **paused**. Existing local SDK
+and engine tests remain useful, and the earlier live language switches retain
+their recorded scope. Neither establishes fresh installation through those SDKs.
+Before a stable release, explicitly decide whether to resume those tests or ship
+with that limitation clearly documented. This review does not authorize another
+deployment or replacement.
+
+### API and compatibility
+
+The proposed contract retains `nixos-vps:hetzner:NixosServer`, all sixteen
+inputs, six required inputs, and the `ipv4`/`serverId` outputs. The checked-in
+`api-baseline.json` and provider tests check the schema against the shared
+component. Retain the current package names, child logical names and default
+values for this release; changing a server default can change infrastructure.
+Examples should continue selecting an offered plan explicitly.
+
+Keep `nixos-vps@0.1.2` as the delegated implementation unless a separately
+reviewed defect requires changing it. The remote SDK is a separate interface:
+plain absolute paths, no direct child-resource access, and no guarantee for
+legacy callback transformations. Follow the existing
+[migration limits](multilanguage.md#migration-limits) rather than treating SDK
+replacement as an automatic migration. `ipv4` signals installation readiness;
+`serverId` alone does not.
+
+The intended platform remains x86_64 Linux with Node.js 22+, Nix and OpenSSH,
+including for Python and Go. Stable version numbering would not expand platform
+support or prove untested recovery paths.
+
+### Release gates
+
+| Area | Current evidence | Work before stable publication |
+| --- | --- | --- |
+| API | Schema/baseline and adapter tests; persisted migration evidence | Review the final regenerated SDK diff and retain resource identity |
+| Live TypeScript | Published `0.2.0-dev.1` fresh installation, reboot and unchanged repeat deployment passed | Retain the [recorded limits](validation.md#fresh-provider-installation); no repeat deployment is needed for documentation |
+| Python/Go | Public consumers, local engine tests and earlier live state switches passed | Fresh installation paused; make an explicit support-scope decision |
+| Versioning | Artifact naming/codegen accepts a stable version | Update provider/schema/runtime metadata, lockfile roots, assertions, examples and generated Go SDK together; do not bump the original component automatically |
+| Publication channels | Local channel policy and regression tests; previous OIDC prerelease evidence | Review the workflow diff and run hosted CI; a real stable upload remains untested |
+| Artifacts | CI verified reproducible previews at the reviewed commit | Build a new clean-commit stable candidate; old previews cannot establish stable artifact integrity |
+| Public Registry | Schema/download URL and published SDKs exist | Prepare Registry metadata and overview, validate documentation generation and request listing separately |
+
+### Channel policy
+
+The version determines the release channel; the manual workflow's `channel`
+selection must agree with it. The default remains `prerelease`. Unsupported
+version forms and a missing or mismatched channel fail before publication.
+
+| Version | Required channel | GitHub release flag | Scoped npm tag |
+| --- | --- | --- | --- |
+| `X.Y.Z-dev.N` | `prerelease` | prerelease | `next` |
+| `X.Y.Z` | `stable` | normal release | `latest` |
+
+Selecting `stable`, enabling publication and approving the `npm` environment
+explicitly authorizes publishing that stable SDK to `latest`. It affects only
+`@sgomezsal/nixos-vps`, not the original unscoped component. GitHub releases
+continue using `make_latest: false`: GitHub's featured-release selection is a
+separate decision from the npm dist-tag.
+
+The same policy checks existing GitHub release flags before writes, rejects a
+plugin from the wrong channel before any SDK upload, and supplies npm's tag
+through the guarded preflight output. Matching-byte npm verification also
+requires the expected tag to point to the candidate version. A version that
+already exists with another tag is not republished or automatically retagged:
+inspect the registry and authorize any tag repair separately. Verification may
+be retried after registry propagation; it fails if the tag never agrees.
+
+Keep exact-commit checks, destination approvals, matching-byte verification and
+the publication gate disabled until the final release is approved. The stable
+channel has local test coverage, not evidence of a real stable upload.
+
+Do not remove `private: true` from the workspace root or provider workspace.
+The generated publication candidate enables only the consumer npm SDK; those
+private workspaces are not packages users should publish.
+
+### Public Pulumi Registry preparation
+
+The public Registry is a discovery/documentation step separate from npm, PyPI
+and GitHub publication. Follow the current
+[Pulumi publication guide](https://www.pulumi.com/docs/iac/guides/building-extending/packages/publishing-packages/)
+when preparing the submission. The intended repository entry is:
+
+```json
+{
+  "repoSlug": "sgomezsal/nixos-vps",
+  "schemaFile": "packages/nixos-vps-provider/schema.json"
+}
+```
+
+Prepare `displayName`, `publisher`, discovery keywords and an overview with
+configuration, prerequisites and runnable examples. The schema currently omits
+those presentation fields. The overview must explain the destructive initial
+installation, local path requirements and tested language/platform boundaries.
+Confirm publisher registration and tag/schema version agreement before submission.
+No Registry pull request has been opened by this preparation.
+
+Channel-aware publication is implemented locally with regression coverage.
+Version changes, final candidate generation, hosted CI, Registry submission and
+actual uploads remain future gates. Fresh Python/Go creation tests stay paused.
+
+The channel review passed the complete `./scripts/validate.sh` suite, including
+54 core tests, 24 provider tests, independent package/engine consumers and workflow
+syntax validation. Channel regression tests cover explicit authorization, both
+GitHub channels and interrupted retries, npm tag verification/repair refusal,
+stable PyPI resolution and workflow wiring. These use substitute APIs; they do
+not upload releases or replace the paused live tests. See the
+[validation record](validation.md#release-channel-review) for execution boundaries.
+
 ## Prepare without publishing
 
 Use x86_64 Linux and the locked provider shell:
@@ -50,8 +164,8 @@ The source archive alone is not a publicly resolvable Go module.
 
 `.github/workflows/provider-release.yml` supports manual dispatch on `main` only.
 It first requires a successful `ci.yml` run for the same commit. Its default
-target is `prepare`: build, test and upload a candidate to GitHub Actions, without
-publishing packages or creating release tags.
+target is `prepare` and default channel is `prerelease`: build, test and upload a
+candidate to GitHub Actions, without publishing packages or creating release tags.
 
 Publishing jobs additionally require repository variable
 `PROVIDER_RELEASE_ENABLED=true` and approval of the destination's environment:
@@ -116,12 +230,14 @@ Keep the publication gate disabled until prerequisites and candidate review are 
 
 ## Future publication order
 
-For a new, explicitly authorized release, first choose an unused version and
-update the provider metadata, generated SDKs and their version assertions. The
+For a new, explicitly authorized release, first choose an unused version and its
+matching channel, then update the provider metadata, generated SDKs and their version assertions. The
 versions below describe the verified OIDC prerelease; do not republish it. Keep the
 source commit fixed across all destinations.
 
-After explicit release authorization:
+After explicit release authorization, select the matching `channel` for every
+dispatch. The versions below illustrate the existing prerelease; stable versions
+use a normal GitHub release and npm `latest` under the policy above.
 
 1. Run `prepare` and review the candidate, source commit and checksums.
 2. Enable the repository variable and dispatch target `github`. Approve the
@@ -137,22 +253,23 @@ After explicit release authorization:
    distribution as version `0.2.0.dev1`, with OIDC attestations enabled.
 5. Review each verification result, then disable the repository variable again.
 
-The npm and PyPI jobs require the matching public plugin prerelease first, so
-their users do not receive an SDK pointing to a missing plugin. The prerelease
+The npm and PyPI jobs require the matching public plugin and release channel
+first, so their users do not receive an SDK pointing to a missing plugin. The prerelease
 supports Linux amd64 only and requires Node.js even from Python and Go.
 
 ## Verification and recovery
 
 Registry verification downloads the actual npm/PyPI artifacts and compares their
-SHA-256 with the candidate. To repeat this read-only check after a publication:
+SHA-256 with the candidate; npm also checks the channel dist-tag. To repeat this
+read-only check after a publication:
 
 ```sh
 node scripts/provider-publish.cjs verify .provider-candidate npm
 node scripts/provider-publish.cjs verify .provider-candidate pypi
 ```
 
-An identical existing npm version is verified and skipped. A staging placeholder
-is pending, never success; do not republish or bump the version to bypass registry
+An identical existing npm version with its expected channel tag is verified and
+skipped. A staging placeholder is pending, never success; do not republish or bump the version to bypass registry
 processing. The verifier polls for a bounded interval and fails honestly if the
 files remain unavailable. PyPI retries verify each existing distribution and
 stage only missing files, rather than using `skip-existing` to hide conflicts.

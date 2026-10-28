@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add an explicit stable/prerelease publication channel, checked against the
+  candidate version. Stable scoped SDKs use npm `latest`; prereleases use `next`.
+  Verification checks the expected npm tag and rejects conflicting GitHub
+  release flags without rewriting existing releases or republishing packages.
 - Record a fresh CX23 installation through the published `0.2.0-dev.1`
   TypeScript SDK and plugin, delegating to unchanged `nixos-vps@0.1.2`.
   Pinned SSH/HTTP, a normal reboot and an unchanged repeat preview/update passed.

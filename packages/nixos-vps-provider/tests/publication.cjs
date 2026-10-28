@@ -1,16 +1,67 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path'),os=require('node:os'),crypto=require('node:crypto');
-const {guardIdentity,registryState,requirePlugin,publishGitHub,preflight,verifyGoSource,verifyRegistry}=require('../../../scripts/provider-publish.cjs');
+const {releasePolicy,guardIdentity,registryState,requirePlugin,publishGitHub,preflight,verifyGoSource,verifyRegistry}=require('../../../scripts/provider-publish.cjs');
 const {verify,writeManifest}=require('../../../scripts/provider-release.cjs');
 const {artifactNames,sha256,archive,buildEnvironment}=require('../scripts/distribution.cjs');
 const root=path.resolve(__dirname,'../../..'),version='0.2.0-dev.1',commit='a'.repeat(40),hash='b'.repeat(64);
 const digest=bytes=>crypto.createHash('sha256').update(bytes).digest('hex');
-function context(target='github'){return {PROVIDER_RELEASE_TARGET:target,PROVIDER_RELEASE_ENABLED:'true',GITHUB_ACTIONS:'true',GITHUB_REPOSITORY:'sgomezsal/nixos-vps',GITHUB_EVENT_NAME:'workflow_dispatch',GITHUB_REF:'refs/heads/main',GITHUB_WORKFLOW_REF:'sgomezsal/nixos-vps/.github/workflows/provider-release.yml@refs/heads/main',GITHUB_SHA:commit};}
-function manifest(){return {version,publishable:true,validation:'passed',reproducible:true,source:{commit,sha256:hash,dirty:false},pluginReleaseTag:'v'+version,goTag:'sdk/go/nixosvps/v'+version,
+function context(target='github'){return {PROVIDER_RELEASE_CHANNEL:'prerelease',PROVIDER_RELEASE_TARGET:target,PROVIDER_RELEASE_ENABLED:'true',GITHUB_ACTIONS:'true',GITHUB_REPOSITORY:'sgomezsal/nixos-vps',GITHUB_EVENT_NAME:'workflow_dispatch',GITHUB_REF:'refs/heads/main',GITHUB_WORKFLOW_REF:'sgomezsal/nixos-vps/.github/workflows/provider-release.yml@refs/heads/main',GITHUB_SHA:commit};}
+function manifest(version='0.2.0-dev.1'){return {version,publishable:true,validation:'passed',reproducible:true,source:{commit,sha256:hash,dirty:false},pluginReleaseTag:'v'+version,goTag:'sdk/go/nixosvps/v'+version,
  artifacts:Object.fromEntries(Object.entries(artifactNames(version)).map(([role,filename])=>[role,{filename,sha256:digest(role)}]))};}
 function temporary(t){const directory=fs.mkdtempSync(path.join(os.tmpdir(),'nixos-vps-publication-test-'));t.after(()=>fs.rmSync(directory,{recursive:true,force:true}));return directory;}
 const json=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json'}});
+
+test('release channel is derived strictly from version and requires explicit matching authorization',()=>{
+ assert.deepEqual(releasePolicy('0.2.0'),{channel:'stable',prerelease:false,npmTag:'latest'});
+ assert.deepEqual(releasePolicy(version),{channel:'prerelease',prerelease:true,npmTag:'next'});
+ for(const value of ['v0.2.0','0.2.0-rc.1','0.2.0+build','01.2.0','0.2.0-dev.01','0.2.0\n',undefined])assert.throws(()=>releasePolicy(value),/Unsupported/);
+ for(const v of [version,'0.2.0']){
+  const m=manifest(v),channel=releasePolicy(v).channel;
+  for(const target of ['github','npm','pypi']){
+   const env={...context(target),PROVIDER_RELEASE_CHANNEL:channel};
+   guardIdentity(m,env,m.source,target);
+   for(const wrong of [undefined,channel==='stable'?'prerelease':'stable'])
+    assert.throws(()=>guardIdentity(m,{...env,PROVIDER_RELEASE_CHANNEL:wrong},m.source,target),/channel/);
+  }
+ }
+});
+
+test('both channels reject conflicting GitHub release flags before writes or SDK upload',async t=>{
+ for(const v of [version,'0.2.0']){
+  const m=manifest(v),policy=releasePolicy(v);let writes=0;
+  const api=async(endpoint,options={})=>{
+   if(options.method&&options.method!=='GET')writes++;
+   return {draft:false,prerelease:!policy.prerelease,assets:[]};
+  };
+  await assert.rejects(()=>requirePlugin(m,api),/channel/);
+  await assert.rejects(()=>publishGitHub(temporary(t),{api,validate:()=>m}),/channel/);
+  await assert.rejects(()=>preflight(temporary(t),'npm',{api,validate:()=>m,fetcher:async()=>{throw Error('Registry must not be contacted');}}),/channel/);
+  assert.equal(writes,0);
+ }
+});
+
+test('npm verifies the channel tag only after matching bytes and never republishes a tag mismatch',async t=>{
+ for(const v of [version,'0.2.0']){
+  const m=manifest(v),policy=releasePolicy(v),directory=temporary(t),output=path.join(directory,'output');
+  const metadata={versions:{[v]:{name:'@sgomezsal/nixos-vps',version:v,dist:{tarball:'https://registry.npmjs.org/sdk.tgz'}}},'dist-tags':{[policy.npmTag]:'0.0.1'}};
+  const fetcher=async url=>url.endsWith('/sdk.tgz')?new Response('nodejs'):json(metadata);
+  const api=async endpoint=>endpoint.startsWith('git/ref/')?{object:{type:'commit',sha:commit}}:{draft:false,prerelease:policy.prerelease,assets:[{name:m.artifacts.plugin.filename,digest:'sha256:'+m.artifacts.plugin.sha256}]};
+  assert.deepEqual(await registryState(m,'npm',fetcher),{state:'tag-mismatch',missing:[]});
+  await assert.rejects(()=>registryState(m,'npm',async url=>url.endsWith('/sdk.tgz')?new Response('tampered'):json(metadata)),/integrity/);
+  await assert.rejects(()=>preflight(directory,'npm',{api,fetcher,validate:()=>m,env:{GITHUB_OUTPUT:output}}),/do not republish/);
+  assert.equal(fs.existsSync(output),false);
+  metadata['dist-tags'][policy.npmTag]=v;
+  await preflight(directory,'npm',{api,fetcher,validate:()=>m,env:{GITHUB_OUTPUT:output}});
+  assert.equal(fs.readFileSync(output,'utf8'),`npm_tag=${policy.npmTag}\nexists=true\n`);
+  const other=policy.npmTag==='latest'?'next':'latest';
+  metadata['dist-tags']={[other]:v};
+  assert.equal((await registryState(m,'npm',fetcher)).state,'tag-mismatch');
+  fs.unlinkSync(output);
+  await preflight(directory,'npm',{api,fetcher:async()=>json({},404),validate:()=>m,env:{GITHUB_OUTPUT:output}});
+  assert.equal(fs.readFileSync(output,'utf8'),`npm_tag=${policy.npmTag}\nexists=false\n`);
+ }
+});
 
 test('publication refuses forks, automatic events, disabled releases, dirty sources, wrong tags and another commit',()=>{
  const m=manifest(),env=context();guardIdentity(m,env,m.source,'github');
@@ -42,8 +93,25 @@ test('registry verification fails after bounded pending checks and succeeds only
  const {directory}=candidate(t);let requests=0,waits=0;
  await assert.rejects(()=>verifyRegistry(directory,'npm',{attempts:3,fetcher:async()=>{requests++;return json({},404);},sleep:async()=>{waits++;}}),/PENDING/);
  assert.equal(requests,3);assert.equal(waits,2);
- const fetcher=async url=>url.endsWith('/sdk.tgz')?new Response('nodejs'):json({versions:{[version]:{name:'@sgomezsal/nixos-vps',version,dist:{tarball:'https://registry.npmjs.org/sdk.tgz'}}}});
+ const fetcher=async url=>url.endsWith('/sdk.tgz')?new Response('nodejs'):json({'dist-tags':{next:version},versions:{[version]:{name:'@sgomezsal/nixos-vps',version,dist:{tarball:'https://registry.npmjs.org/sdk.tgz'}}}});
  await verifyRegistry(directory,'npm',{attempts:1,fetcher});
+ let tagChecks=0;
+ const wrongTag=async url=>url.endsWith('/sdk.tgz')?new Response('nodejs'):
+  json({'dist-tags':{next:++tagChecks===2?version:'0.0.1'},versions:{[version]:{name:'@sgomezsal/nixos-vps',version,dist:{tarball:'https://registry.npmjs.org/sdk.tgz'}}}});
+ await assert.rejects(()=>verifyRegistry(directory,'npm',{attempts:1,fetcher:wrongTag}),/expected channel tag/);
+ await verifyRegistry(directory,'npm',{attempts:1,fetcher:wrongTag});
+});
+
+test('stable PyPI verification uses the stable version and downloads both distributions',async()=>{
+ const m=manifest('0.2.0'),requests=[];
+ const fetcher=async url=>{
+  requests.push(url);
+  if(url.startsWith('https://files.pythonhosted.org/'))return new Response(url.split('/').pop());
+  return json({info:{name:'pulumi-nixos-vps',version:'0.2.0'},urls:['pythonWheel','pythonSource'].map(role=>({filename:m.artifacts[role].filename,digests:{sha256:m.artifacts[role].sha256},url:'https://files.pythonhosted.org/'+role}))});
+ };
+ assert.deepEqual(await registryState(m,'pypi',fetcher),{state:'complete',missing:[]});
+ assert.equal(requests[0],'https://pypi.org/pypi/pulumi-nixos-vps/0.2.0/json');
+ assert.equal(requests.length,3);
 });
 
 test('npm distinguishes absent, staging and complete versions and rejects downloaded-byte mismatches',async()=>{
@@ -51,7 +119,7 @@ test('npm distinguishes absent, staging and complete versions and rejects downlo
  assert.equal((await registryState(m,'npm',async()=>json({},404))).state,'absent');
  assert.equal((await registryState(m,'npm',async()=>json({versions:{'0.0.0-stage':{}}}))).state,'pending');
  assert.equal((await registryState(m,'npm',async()=>json({versions:{'0.0.0-stage':{},'0.1.0':{}}}))).state,'absent','An old placeholder must not block later releases');
- const fetcher=async url=>url.endsWith('/sdk.tgz')?new Response('nodejs'):json({versions:{[version]:{name:'@sgomezsal/nixos-vps',version,dist:{tarball:'https://registry.npmjs.org/sdk.tgz'}}}});
+ const fetcher=async url=>url.endsWith('/sdk.tgz')?new Response('nodejs'):json({'dist-tags':{next:version},versions:{[version]:{name:'@sgomezsal/nixos-vps',version,dist:{tarball:'https://registry.npmjs.org/sdk.tgz'}}}});
  assert.equal((await registryState(m,'npm',fetcher)).state,'complete');
  assert.equal((await registryState(m,'npm',async url=>url.endsWith('/sdk.tgz')?json({},404):fetcher(url))).state,'pending','Metadata without downloadable bytes is not a release');
  await assert.rejects(()=>registryState({...m,artifacts:{...m.artifacts,nodejs:{...m.artifacts.nodejs,sha256:'0'.repeat(64)}}},'npm',fetcher),/integrity/);
@@ -82,8 +150,8 @@ with tarfile.open(sys.argv[1],'w:gz') as archive:
  assert.throws(()=>verifyGoSource(directory,m,path.join(source,'nixosvps')),/Unsafe Go/);
 });
 
-test('GitHub release creation is resumable, refuses conflicting assets/tags and publishes Go last',async t=>{
- const directory=temporary(t),m=manifest(),events=[],tags=new Map();let release=null;
+for(const releaseVersion of ['0.2.0-dev.1','0.2.0'])test(`GitHub ${releaseVersion} release is resumable, refuses conflicts and publishes Go last`,async t=>{
+ const directory=temporary(t),m=manifest(releaseVersion),events=[],tags=new Map();let release=null;
  for(const name of ['manifest.json','SHA256SUMS',...Object.values(m.artifacts).map(item=>item.filename)])fs.writeFileSync(path.join(directory,name),name);
  for(const item of Object.values(m.artifacts))item.sha256=sha256(path.join(directory,item.filename));
  let failUpload=true;
@@ -101,8 +169,8 @@ test('GitHub release creation is resumable, refuses conflicting assets/tags and 
   throw Error('Unexpected API call '+endpoint);
  };
  const options={api,validate:()=>m};
- await assert.rejects(()=>publishGitHub(directory,options),/Synthetic/);assert.equal(release.draft,true);assert.equal(tags.has(m.goTag),false);
- await publishGitHub(directory,options);assert.equal(release.draft,false);assert.equal(tags.get(m.goTag),commit);
+ await assert.rejects(()=>publishGitHub(directory,options),/Synthetic/);assert.equal(release.draft,true);assert.equal(release.prerelease,releasePolicy(releaseVersion).prerelease);assert.equal(tags.has(m.goTag),false);
+ await publishGitHub(directory,options);assert.equal(release.draft,false);assert.equal(release.make_latest,'false');assert.equal(release.prerelease,releasePolicy(releaseVersion).prerelease);assert.equal(tags.get(m.goTag),commit);
  const writes=events.filter(event=>event.method!=='GET').length;await publishGitHub(directory,options);
  assert.equal(events.filter(event=>event.method!=='GET').length,writes,'Retry performed writes');
  release.assets[0].digest='sha256:'+hash;await assert.rejects(()=>publishGitHub(directory,options),/differs/);
@@ -126,6 +194,14 @@ test('the workflow is manual, fail-closed, approved per destination and gives no
  const source=fs.readFileSync(filename,'utf8'),workflow=YAML.parse(source);
  assert.deepEqual(Object.keys(workflow.on),['workflow_dispatch']);
  assert.equal(workflow.on.workflow_dispatch.inputs.target.default,'prepare');
+ assert.deepEqual(workflow.on.workflow_dispatch.inputs.channel.options,['prerelease','stable']);
+ assert.equal(workflow.on.workflow_dispatch.inputs.channel.default,'prerelease');
+ assert.equal(workflow.on.workflow_dispatch.inputs.channel.required,true);
+ assert.equal(workflow.env.PROVIDER_RELEASE_CHANNEL,'${{ inputs.channel }}');
+ const publish=workflow.jobs.npm.steps.find(step=>step.name==='Publish scoped SDK with OIDC');
+ assert.equal(publish.env.NPM_DIST_TAG,'${{ steps.check.outputs.npm_tag }}');
+ assert.match(publish.run,/--tag "\$NPM_DIST_TAG"/);
+ assert.doesNotMatch(publish.run,/--tag (next|latest)\b/);
  assert.deepEqual(workflow.permissions,{contents:'read'});
  assert.deepEqual(workflow.jobs.prepare.permissions,{contents:'read',actions:'read'});
  assert.match(workflow.jobs.prepare.steps.find(step=>step.name==='Require successful validation of this commit').run,/--commit "\$GITHUB_SHA"/);

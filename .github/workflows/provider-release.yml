@@ -1,4 +1,4 @@
-# Manual prerelease distribution only. Disabled until explicitly enabled and approved.
+# Manual channel-aware distribution. Disabled until explicitly enabled and approved.
 name: Prepare or publish multi-language provider
 on:
   workflow_dispatch:
@@ -9,6 +9,14 @@ on:
         options: [prepare, github, npm, pypi]
         default: prepare
         required: true
+      channel:
+        description: Must match candidate version; stable publishes the scoped SDK to latest
+        type: choice
+        options: [prerelease, stable]
+        default: prerelease
+        required: true
+env:
+  PROVIDER_RELEASE_CHANNEL: ${{ inputs.channel }}
 permissions:
   contents: read
 concurrency:
@@ -139,11 +147,13 @@ jobs:
         run: nix develop .#provider --command node scripts/provider-publish.cjs preflight .provider-candidate npm
       - name: Publish scoped SDK with OIDC
         if: steps.check.outputs.exists != 'true'
+        env:
+          NPM_DIST_TAG: ${{ steps.check.outputs.npm_tag }}
         run: |
           nix develop .#provider --command bash -euo pipefail <<'SH'
             artifact=$(node -p 'require("./.provider-candidate/manifest.json").artifacts.nodejs.filename')
             npm exec --yes --package=npm@11.15.0 -- npm publish ".provider-candidate/$artifact" \
-              --ignore-scripts --access public --tag next --provenance --registry=https://registry.npmjs.org/
+              --ignore-scripts --access public --tag "$NPM_DIST_TAG" --provenance --registry=https://registry.npmjs.org/
           SH
       - name: Download and verify published SDK
         run: nix develop .#provider --command node scripts/provider-publish.cjs verify .provider-candidate npm

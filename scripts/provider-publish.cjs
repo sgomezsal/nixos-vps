@@ -6,7 +6,17 @@ const {contract,sha256,run}=require('../packages/nixos-vps-provider/scripts/dist
 const root=path.resolve(__dirname,'..'),repository='sgomezsal/nixos-vps';
 const digest=bytes=>crypto.createHash('sha256').update(bytes).digest('hex');
 
+function releasePolicy(version) {
+  if(typeof version!=='string'||version.trim()!==version||!/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-dev\.(0|[1-9]\d*))?$/.test(version))
+    throw Error('Unsupported release version; use X.Y.Z or X.Y.Z-dev.N');
+  const prerelease=version.includes('-dev.');
+  return {channel:prerelease?'prerelease':'stable',prerelease,npmTag:prerelease?'next':'latest'};
+}
+
 function guardIdentity(manifest,env,source,target) {
+  const policy=releasePolicy(manifest.version);
+  if(env.PROVIDER_RELEASE_CHANNEL!==policy.channel)
+    throw Error('Selected release channel does not match candidate version');
   if(!['github','npm','pypi'].includes(target)||env.PROVIDER_RELEASE_TARGET!==target||
     env.PROVIDER_RELEASE_ENABLED!=='true'||env.GITHUB_ACTIONS!=='true'||
     env.GITHUB_REPOSITORY!==repository||env.GITHUB_EVENT_NAME!=='workflow_dispatch'||
@@ -71,6 +81,7 @@ async function checkDownload(url,expected,fetcher=fetch) {
 }
 
 async function registryState(manifest,target,fetcher=fetch) {
+  const policy=releasePolicy(manifest.version);
   if(target==='npm') {
     const response=await request('https://registry.npmjs.org/'+encodeURIComponent(contract.npmPackage),{},fetcher);
     if(response.status===404)return {state:'absent',missing:['nodejs']};
@@ -81,6 +92,7 @@ async function registryState(manifest,target,fetcher=fetch) {
     const url=new URL(version.dist?.tarball);
     if(url.protocol!=='https:'||url.hostname!=='registry.npmjs.org')throw Error('Unexpected npm artifact host');
     if(!await checkDownload(url.href,manifest.artifacts.nodejs.sha256,fetcher))return {state:'pending',missing:['nodejs']};
+    if(data['dist-tags']?.[policy.npmTag]!==manifest.version)return {state:'tag-mismatch',missing:[]};
     return {state:'complete',missing:[]};
   }
   if(target!=='pypi')throw Error('Unknown registry');
@@ -122,8 +134,9 @@ async function tagTarget(tag,api=githubAPI) {
   return object.sha;
 }
 async function requirePlugin(manifest,api=githubAPI) {
+  const policy=releasePolicy(manifest.version);
   const release=await api('releases/tags/'+encodeURIComponent(manifest.pluginReleaseTag));
-  if(!release||release.draft||!release.prerelease)throw Error('Publish and verify the matching GitHub prerelease before publishing an SDK');
+  if(!release||release.draft||release.prerelease!==policy.prerelease)throw Error('Publish and verify the matching GitHub release channel before publishing an SDK');
   if(await tagTarget(manifest.pluginReleaseTag,api)!==manifest.source.commit)throw Error('Plugin release points to another commit');
   const asset=release.assets.find(item=>item.name===manifest.artifacts.plugin.filename);
   if(!asset||asset.digest!=='sha256:'+manifest.artifacts.plugin.sha256)throw Error('GitHub plugin asset integrity mismatch');
@@ -131,16 +144,18 @@ async function requirePlugin(manifest,api=githubAPI) {
 
 async function publishGitHub(directory,{env=process.env,api=githubAPI,validate=guard}={}) {
   const manifest=validate(directory,'github',env),commit=manifest.source.commit;
+  const policy=releasePolicy(manifest.version);
+  // Inspect an existing release before creating any missing tags.
+  let release=await api('releases/tags/'+encodeURIComponent(manifest.pluginReleaseTag));
+  if(release&&release.prerelease!==policy.prerelease)throw Error('Existing release channel differs; refusing modification');
   for(const tag of [manifest.pluginReleaseTag,manifest.goTag]) {
     const current=await tagTarget(tag,api);
     if(current&&current!==commit)throw Error('Existing release tag points to another commit; refusing replacement');
   }
   if(!await tagTarget(manifest.pluginReleaseTag,api))await api('git/refs',{method:'POST',body:{ref:'refs/tags/'+manifest.pluginReleaseTag,sha:commit}});
-  let release=await api('releases/tags/'+encodeURIComponent(manifest.pluginReleaseTag));
   if(!release)release=await api('releases',{method:'POST',body:{tag_name:manifest.pluginReleaseTag,target_commitish:commit,
-    name:'nixos-vps '+manifest.version,draft:true,prerelease:true,
-    body:'Experimental multi-language component provider. Requires Node.js 22+, Nix, OpenSSH and Pulumi on x86_64 Linux. Installation formats the target disk. See docs/multilanguage.md and examples/provider/README.md at this release commit.'}});
-  if(!release.prerelease)throw Error('Existing release is not a prerelease; refusing modification');
+    name:'nixos-vps '+manifest.version,draft:true,prerelease:policy.prerelease,
+    body:(policy.prerelease?'Experimental multi-language':'Multi-language')+' component provider. Requires Node.js 22+, Nix, OpenSSH and Pulumi on x86_64 Linux. Installation formats the target disk. See docs/multilanguage.md and examples/provider/README.md at this release commit.'}});
   const filenames=['manifest.json','SHA256SUMS',...Object.values(manifest.artifacts).map(item=>item.filename)];
   if(release.assets.some(item=>!filenames.includes(item.name)))throw Error('Unexpected assets in existing GitHub release');
   for(const filename of filenames) {
@@ -151,7 +166,7 @@ async function publishGitHub(directory,{env=process.env,api=githubAPI,validate=g
     const asset=await api(`releases/${release.id}/assets?name=${encodeURIComponent(filename)}`,{method:'POST',bytes:content,headers:{'Content-Type':'application/octet-stream'}});
     if(asset.digest!==expected)throw Error('Uploaded GitHub asset integrity mismatch');
   }
-  if(release.draft)await api('releases/'+release.id,{method:'PATCH',body:{draft:false,prerelease:true,make_latest:'false'}});
+  if(release.draft)await api('releases/'+release.id,{method:'PATCH',body:{draft:false,prerelease:policy.prerelease,make_latest:'false'}});
   await requirePlugin(manifest,api);
   if(!await tagTarget(manifest.goTag,api))await api('git/refs',{method:'POST',body:{ref:'refs/tags/'+manifest.goTag,sha:commit}});
   return manifest;
@@ -162,6 +177,8 @@ async function preflight(directory,target,{env=process.env,fetcher=fetch,api=git
   await requirePlugin(manifest,api);
   const status=await registryState(manifest,target,fetcher);
   if(status.state==='pending')throw Error(target+' is processing this package. Do not republish or bump the version; verify later');
+  if(status.state==='tag-mismatch')throw Error('Matching npm version already exists but its channel tag differs. Review the dist-tag separately; do not republish');
+  if(target==='npm'&&env.GITHUB_OUTPUT)fs.appendFileSync(env.GITHUB_OUTPUT,`npm_tag=${releasePolicy(manifest.version).npmTag}\n`);
   if(target==='pypi') {
     const output=uploadDirectory;
     if(fs.existsSync(output))throw Error('Upload directory exists; refusing overwrite');
@@ -174,16 +191,20 @@ async function preflight(directory,target,{env=process.env,fetcher=fetch,api=git
 
 async function verifyRegistry(directory,target,{attempts=6,delay=20000,fetcher=fetch,sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms))}={}) {
   const manifest=verify(directory,true,true);
+  let state;
   for(let attempt=0;attempt<attempts;attempt++) {
-    if((await registryState(manifest,target,fetcher)).state==='complete'){
-      console.log('VERIFIED: '+target+' artifacts downloaded and SHA-256 matched the candidate.');return;
+    state=(await registryState(manifest,target,fetcher)).state;
+    if(state==='complete'){
+      console.log('VERIFIED: '+target+' artifacts downloaded and SHA-256 matched the candidate.'+
+        (target==='npm'?' '+releasePolicy(manifest.version).npmTag+' tag matches.':''));return;
     }
     if(attempt+1<attempts)await sleep(delay);
   }
+  if(state==='tag-mismatch')throw Error('npm artifacts match but the expected channel tag does not. Review the dist-tag separately; do not republish');
   throw Error('PENDING: registry processing is incomplete. Do not republish or bump the version; rerun verification');
 }
 
-module.exports={guardIdentity,verifyGoSource,guard,registryState,tagTarget,requirePlugin,publishGitHub,preflight,verifyRegistry};
+module.exports={releasePolicy,guardIdentity,verifyGoSource,guard,registryState,tagTarget,requirePlugin,publishGitHub,preflight,verifyRegistry};
 if(require.main===module)(async()=>{
   const [command,directory,target,...extra]=process.argv.slice(2);
   if(!directory||extra.length)throw Error('Usage: provider-publish.cjs guard|preflight|verify|publish-github /candidate [npm|pypi|github]');

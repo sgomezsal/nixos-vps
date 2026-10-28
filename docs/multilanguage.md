@@ -57,6 +57,11 @@ published `0.2.0-dev.1` TypeScript SDK passed on a new CX23, including a normal
 reboot and an unchanged repeat update. Fresh creation through Python/Go was not
 separately executed.
 
+Fresh Python/Go creation tests are currently paused. The
+[stable-release preparation](provider-publication.md#stable-020-preparation)
+records the remaining API, distribution and support-scope decisions; it does not
+change the published prerelease or authorize cloud operations.
+
 The resource token stays `nixos-vps:hetzner:NixosServer`. Its initial contract is
 checked against `packages/nixos-vps-provider/api-baseline.json`: sixteen inputs,
 six required inputs, and the `ipv4` and `serverId` outputs. Paths are plain absolute

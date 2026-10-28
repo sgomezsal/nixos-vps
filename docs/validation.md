@@ -1,5 +1,30 @@
 # Validation coverage
 
+## Release channel review
+
+**PASS — Executed locally, 2026-10-28.** `./scripts/validate.sh` exited zero
+after the stable/prerelease publishing changes. It passed build/type checks,
+54 core and 24 provider tests, independent tarball consumption, SOPS fixtures,
+read-only/fix preflight checks, real local SSH identity/policy checks, persisted
+Pulumi-engine lifecycle tests, packaged-plugin SDK/example tests, template
+parity and publication-scope checks. Actionlint accepted the modified workflow.
+The dependency audit reported zero vulnerabilities; the credential signature
+scan checked 117 source/build/log files with zero findings.
+
+The channel tests use substitute GitHub/npm/PyPI APIs. They exercise explicit
+channel authorization, stable/prerelease release flags, interrupted upload
+recovery, write-free retries, npm tag checks and refusal to republish a matching
+artifact with the wrong tag. Stable PyPI version mapping and both distribution
+downloads are covered. A final provider-test rerun also passed after adding an
+assertion that tampered bytes fail even when the tag is wrong.
+
+Nix evaluation/check commands completed using existing VM derivations in the
+local store; this run does not claim new VM boots. Local documentation links and
+shell-block syntax passed separately. At the time of this local run, hosted CI
+for these changes and a real stable publication had not been run. No operator credentials,
+Hetzner access, VPS operations, registry uploads or dist-tag changes were used.
+Fresh live Python/Go creation tests remain paused.
+
 ## Current status
 
 - The original TypeScript component is published as `nixos-vps@0.1.2`.
