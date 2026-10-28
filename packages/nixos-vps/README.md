@@ -14,6 +14,11 @@ or recovery scenario. See the repository's
 [validation coverage](https://github.com/sgomezsal/nixos-vps/blob/main/docs/validation.md)
 for the tested boundaries and fix status.
 
+The unchanged published `0.1.2` runtime also completed a fresh installation through
+the `0.2.0-dev.1` component provider. All twenty bundled core files matched this
+npm package. Pinned SSH/HTTP checks, a controlled reboot and an unchanged repeat
+preview/update passed. See [fresh-provider evidence](https://github.com/sgomezsal/nixos-vps/blob/main/docs/validation.md#fresh-provider-installation).
+
 ## Quickstart
 
 ### 1. Install the prerequisites
@@ -34,7 +39,7 @@ Git and the installer tools, so separate installations are unnecessary. Keep
 that shell open for the following commands. Git must already be available to
 clone the repository; alternatively, download a source archive.
 
-For an independent tarball consumer, provide the tools listed above through your
+For an independent npm or tarball consumer, provide the tools listed above through your
 own environment. Installing the npm package does not provide the development
 shell or install system tools.
 
@@ -72,7 +77,7 @@ npm install --ignore-scripts nixos-vps@0.1.2 @pulumi/pulumi
 npm install --ignore-scripts --save-dev typescript @types/node
 npx nixos-vps init --stack dev \
   --key-directory "$HOME/.ssh/my-nixos-vps" \
-  --location nbg1 --server-type cpx22 --ports 80,443
+  --location nbg1 --server-type cx23 --ports 80,443
 git init
 git add .
 npx nixos-vps validate --stack dev
@@ -103,15 +108,27 @@ config:
   standalone-nixos:sshPrivateKeyPath: /absolute/external/key-directory/deploy
   standalone-nixos:sshHostKeyPrivatePath: /absolute/external/key-directory/host
   standalone-nixos:location: nbg1
-  standalone-nixos:serverType: cpx22
+  standalone-nixos:serverType: cx23
   standalone-nixos:tcpPorts: [80, 443]
   standalone-nixos:expectedDisk: /dev/sda
   # Optional: restrict TCP/22 to the deployment runner.
   # standalone-nixos:sshSourceIps: ["203.0.113.10/32"]
 ```
 
-SSH is public by default; set `sshSourceIps` to restrict access. Availability of
-server types and locations must be checked with Hetzner when deploying.
+SSH is public by default; set `sshSourceIps` to restrict access.
+
+`cx23` and `nbg1` are explicit example choices, not stock or price guarantees.
+Choose a currently offered x86_64 CX, CPX or CCX plan and check its price and
+availability before deployment. CAX/ARM targets are not supported by this package.
+For the kexec installation path, choose at least 2 GiB of RAM to leave room for
+the RAM installer; smaller plans require separate validation. Only CX23 has live
+installation evidence here. See the upstream [system requirements](https://nix-community.github.io/nixos-anywhere/).
+
+The component and initializer retain `cpx22` as their compatibility default;
+explicitly set `serverType` rather than assuming that default is currently sold.
+Local `validate` checks configuration, not provider stock, pricing or account limits.
+An availability response is an indicator, not a reservation: do not delete a
+working server assuming a replacement is guaranteed.
 
 The template serves HTTP on port 80. Opening a firewall port does not configure a
 service, DNS or HTTPS. Configure workloads in `nixos/configuration.nix` and review
@@ -150,6 +167,7 @@ The following steps access Hetzner. Use a new stack for a fresh server. This exa
 uses a local Pulumi backend with passphrase encryption:
 
 ```sh
+umask 077
 mkdir -p "$HOME/.local/state/my-nixos-vps"
 pulumi login "file://$HOME/.local/state/my-nixos-vps"
 read -rsp 'New Pulumi backend passphrase: ' PULUMI_CONFIG_PASSPHRASE
@@ -208,6 +226,23 @@ Initial installation and routine updates are separate. Flake or path edits do no
 rerun installation. A replacement VM receives a new installation; an existing
 NixOS target is rejected by the installer.
 
+### 7. Retire a server intentionally
+
+Keep resource protection enabled during ordinary use. To retire a server, first
+preserve any application data and the encrypted Pulumi state, and confirm the
+project, backend, stack and exact resource IDs. Only then explicitly remove
+protection from the resources you intend to delete. Preview the destruction:
+
+```sh
+pulumi destroy --preview-only --stack dev
+```
+
+Review every deletion before running `pulumi destroy --stack dev` interactively.
+Do not use a broad unprotect operation on a stack containing unrelated resources.
+Deleting the server destroys its root disk. Check Hetzner afterwards for retained
+Primary IPs, volumes or snapshots: they can continue billing independently.
+Powering off a server does not stop billing. See [Cloud billing](https://docs.hetzner.com/cloud/billing/faq/).
+
 ## Component API
 
 For an existing TypeScript Pulumi project:
@@ -222,6 +257,8 @@ const server = new NixosServer("web", {
   sshPublicKeyPath: "/keys/deploy.pub",
   sshPrivateKeyPath: "/keys/deploy",
   sshHostKeyPrivatePath: "/keys/dedicated-server-host-key",
+  serverType: "cx23",
+  location: "nbg1",
   tcpPorts: [80, 443],
 }, { protect: true });
 
@@ -238,7 +275,7 @@ source users can also use the repository's exported package and
 | --- | --- | --- |
 | `expectedDisk` | `/dev/sda` | Whole root disk; must match disko |
 | `expectedDiskSerial` | omitted | Externally known disk serial |
-| `serverType` | `cpx22` | x86_64 Hetzner server type |
+| `serverType` | `cpx22` | Compatibility default; explicitly select a currently offered x86_64 plan |
 | `location` | `nbg1` | Hetzner location |
 | `bootstrapImage` | `ubuntu-24.04` | Ubuntu or Debian bootstrap image |
 | `existingSshKeyIds` | omitted | Existing SSH key IDs in the Hetzner project |
@@ -324,8 +361,7 @@ coherent project before retrying; do not regenerate identities already in use.
 ## Validation limits
 
 Local tests cover package installation, NixOS builds and VMs, SSH behavior and
-Pulumi lifecycle operations with substitute providers. Live testing covers one
-CX23 in Helsinki with Ubuntu 24.04 bootstrap and BIOS boot, including SSH identity
+Pulumi lifecycle operations with substitute providers. Live testing covers CX23 in Helsinki with Ubuntu 24.04 bootstrap and BIOS boot, including SSH identity
 continuity, disk checks, public HTTP, normal reboots and a routine configuration
 update. Other provider configurations, live UEFI, package/kernel upgrades and
 recovery after kexec or formatting remain unverified. This component does not

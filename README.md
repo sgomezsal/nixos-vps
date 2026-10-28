@@ -10,10 +10,10 @@ SSH. The IPv4 output resolves after installation and SSH readiness checks comple
 > [!NOTE]
 > **Experimental / pre-release.** Local validation covers package and provider tests,
 > four VM installation checks, NixOS builds and independent tarball consumers.
-> One live CX23 installation passed with the disk-inventory fix included in
-> version `0.1.2`. The live test also verified SSH identity across kexec,
-> public HTTP readiness, normal reboots, a routine NixOS configuration update
-> and a second deployment with no infrastructure changes. See
+> Live CX23 validation covers the original TypeScript component and a fresh
+> installation through the published `0.2.0-dev.1` provider. Checks verified pinned
+> SSH through installation, HTTP readiness, normal reboot and unchanged repeat
+> deployments. A routine NixOS update also passed on the original test server. See
 > [validation coverage](docs/validation.md) for details.
 
 > [!WARNING]
@@ -82,8 +82,6 @@ the local setup without Hetzner credentials or creating a server.
 The [package guide](packages/nixos-vps/README.md) includes the complete API,
 installation requirements and troubleshooting instructions.
 
-## Development
-
 The [experimental component provider](packages/nixos-vps-provider/README.md)
 has a published `0.2.0-dev.1` prerelease with TypeScript, Python and Go SDKs.
 It is separate from the existing `nixos-vps@0.1.2` package. See the
@@ -91,7 +89,10 @@ It is separate from the existing `nixos-vps@0.1.2` package. See the
 platform requirements and migration limits. An existing test VPS passed migration
 and TypeScript → Python → Go → TypeScript switches without infrastructure changes
 or another installation. See [live validation](docs/validation.md#live-language-switches)
-for the evidence and remaining tests.
+for those results and the [fresh-provider installation](docs/validation.md#fresh-provider-installation)
+for the subsequent TypeScript creation test and its remaining limits.
+
+## Development
 
 With Nix flakes enabled on x86_64 Linux:
 

@@ -1,5 +1,26 @@
 # Validation coverage
 
+## Current status
+
+- The original TypeScript component is published as `nixos-vps@0.1.2`.
+- The multi-language provider and SDKs are published as `0.2.0-dev.1`
+  (`0.2.0.dev1` for Python). [npm OIDC and provenance](#npm-oidc-prerelease),
+  PyPI OIDC, matching artifact hashes and independent public consumers passed.
+- Live installation evidence covers the original component. The provider's
+  published `0.2.0-dev.0` SDKs passed migration and language switches on the
+  existing server. A subsequent [fresh installation](#fresh-provider-installation)
+  through the `0.2.0-dev.1` TypeScript SDK passed on a new CX23, including pinned
+  readiness, a controlled reboot and unchanged repeat preview/update.
+- A fresh-provider test was prepared on 2026-10-28 but stopped before any cloud
+  mutation because the selected server type was unavailable. Local consumer
+  validation passed; the blocked attempt is not an installation pass. No
+  replacement was attempted at that stage. After capacity returned, a separately
+  reviewed retirement and fresh-create sequence completed without two concurrent
+  test servers. Other plans, live UEFI and post-formatting recovery remain unverified.
+
+The sections below retain the versions and test counts of each executed run;
+those historical counts must not be read as the current suite size.
+
 The core `0.1.2` release-candidate CI ran on **2026-10-27 UTC**, commit
 `4314d61`. All
 **53 package tests passed**, with
@@ -10,7 +31,7 @@ The published multi-language prerelease and protected migration checks are
 recorded under [distribution evidence](#multi-language-prerelease-distribution).
 Earlier development runs below are historical evidence, not current release status.
 
-## Latest offline review — 2026-10-28
+## Offline review before publication — 2026-10-28
 
 The complete `./scripts/validate.sh` run exited zero: build/type checks, package
 consumption, SOPS, read-only CLI validation, SSH identity/policy, Pulumi lifecycle,
@@ -37,7 +58,10 @@ No Hetzner account, VPS, cloud operation or registry publication was used during
 this offline review. The subsequent
 [live TypeScript migration](#live-typescript-provider-migration) and
 [language switches](#live-language-switches) passed. Remaining integration work
-is fresh installation through the new provider and its first npm OIDC upload.
+at that stage included fresh installation through the new provider. The later
+[npm OIDC prerelease](#npm-oidc-prerelease) verified the upload and provenance; the
+[subsequent fresh-server test](#fresh-provider-installation) verified initial
+creation through the TypeScript SDK.
 
 ## What is tested
 
@@ -562,5 +586,75 @@ The original unscoped component and its tags are unchanged. The repository's
 This release validation did not load operator credentials, access Hetzner,
 connect to the VPS, create cloud resources, reinstall NixOS or reboot a server.
 Previously recorded live migration/language-switch results used `0.2.0-dev.0`;
-they are not a fresh live installation test of `0.2.0-dev.1`. Initial provisioning
-through the multi-language provider remains unverified.
+they were not a fresh live installation test of `0.2.0-dev.1`. The separately
+authorized [fresh-provider installation](#fresh-provider-installation) below
+subsequently verified initial provisioning through the TypeScript SDK.
+
+## User documentation review — 2026-10-28
+
+The review compared the guides with the checked-in CLI, component defaults,
+provider schema and public registry metadata. It corrected the stale npm OIDC
+status, separated historical evidence from current status, documented explicit
+plan selection and capacity limits, and made the three-language setup use public
+SDKs by default. Preview-artifact instructions remain separate.
+
+Executed checks passed: `npm run check`, 54 core and 19 provider unit tests,
+independent core tarball consumption, and all four public-distribution consumers
+(plugin, npm, PyPI and Go). Local Markdown links/anchors and shell-block syntax
+were checked separately. These checks do not establish live provider installation.
+No cloud credentials, Hetzner queries, provisioning or registry publication were
+used in this documentation review. Source README/description changes are for the
+next package release; existing registry artifacts remain unchanged.
+
+## Fresh-provider installation
+
+**PASS — Executed, 2026-10-28.** An independent consumer installed the public
+`@sgomezsal/nixos-vps@0.2.0-dev.1` SDK and matching plugin, from release source
+`17f73ec33153f8e1079aa0136954859ff77d92a1`. It used the published
+`nixos-vps@0.1.2` initializer/validator, its copied locked NixOS template and new
+external deployment/host SSH identities. All twenty delegated core-package files
+matched the independently installed npm package byte-for-byte. No provider or
+installer source was patched for this deployment.
+
+The target was one CX23 in Helsinki, using Ubuntu 24.04 bootstrap, a single root
+disk and BIOS boot. This run used the TypeScript SDK; it did not independently
+exercise fresh creation through Python or Go.
+
+Executed evidence:
+
+| Check | Result |
+| --- | --- |
+| Local preflight | TypeScript, keys/permissions, SSH policy, locked NixOS build, disko, ports and checksum-pinned installer passed |
+| Budget/capacity | Current price and capacity reviewed before retirement and creation; no automatic plan upgrade |
+| Retirement | Exact old test resources retired using a reviewed saved plan; both old auto-delete IPs removed and empty dedicated project confirmed before creation |
+| Fresh creation | Saved create plan produced one protected CX23 with backups disabled; initial stack was empty |
+| Installation | Completed bootstrap SSH, installation, post-install SSH and ready stages; protected stdout recorded `installed=true` |
+| Readiness | Pinned SSH, public-key-only policy, active SSH/Caddy, no failed units, public HTTP 200 and the new configuration marker passed |
+| Disk and boot | NixOS 26.05, BIOS, one `/dev/sda` disk with nonempty serial, ext4 root and vfat boot verified; previous installation marker absent |
+| Reboot | One controlled reboot returned with a new boot ID, identical system generation/disk/partitions and pinned SSH/HTTP ready |
+| Idempotency | Repeat preview and saved-plan update reported no changes; all ten plan entries, including provider resources, were `same` |
+| State comparison | Order-independent comparison confirmed identical IDs, inputs, outputs, provider references and protection; secret values compared only in memory |
+| Final inventory | One server, two auto-delete Primary IPs, one firewall and one SSH registration; no backups, snapshots, volumes, networks, floating IPs or load balancers |
+| Protection | Component and all five managed children protected after creation and repeat deployment |
+
+The initial create/install completed in approximately 4 minutes 31 seconds. Its
+first post-apply inventory query encountered a transient connection failure;
+a read-only retry confirmed the completed state without repeating apply.
+SSH disconnected as the controlled reboot began; a read-only follow-up confirmed
+the new boot without issuing another reboot. A private comparison helper initially
+treated checkpoint array order as meaningful; sorting by URN showed that the
+values were unchanged. Final state comparisons used decrypted values only in memory rather than
+ciphertext, which can change on rewrite. Decrypted values were not written to
+logs or files.
+
+Private operational evidence retains source/plan hashes, encrypted checkpoints,
+installation-stage records, inventory and before/after readiness results. These
+files contain operator-specific metadata and are not distributed in this repository.
+The unrelated server/project was outside the scoped credentials and operations.
+
+This was an authorized billable deployment, distinct from zero-cost local tests
+and registry publication checks. It establishes one real fresh TypeScript-provider
+installation, not universal plan support or production readiness. Other plans,
+live UEFI, fresh creation through Python/Go, package/kernel upgrades and recovery
+after kexec or formatting remain unverified. Earlier Python/Go state switches
+retain their separately recorded `0.2.0-dev.0` evidence.

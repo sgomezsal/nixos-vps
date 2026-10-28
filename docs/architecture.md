@@ -98,8 +98,11 @@ provider boundary; remote-compatible `transforms` and protected migration plans
 are covered in the [migration limits](multilanguage.md#migration-limits). Direct
 child-resource access is outside that compatibility guarantee. A published
 TypeScript SDK has migrated one existing test stack, followed by Python/Go
-switches and a return to TypeScript without cloud-resource changes. Fresh provider
-installations remain unverified. See [live evidence](validation.md#live-language-switches).
+switches and a return to TypeScript without cloud-resource changes. A subsequent
+[fresh TypeScript provider installation](validation.md#fresh-provider-installation)
+also passed on a CX23, followed by a normal reboot and unchanged repeat update.
+Other target configurations and recovery paths remain outside that evidence.
+See [language-switch evidence](validation.md#live-language-switches) for the earlier SDK versions.
 
 The provider preview pipeline installs its locked runtime, generates the SDKs
 with a pinned CLI and packages their public entry points. Two builds from separate

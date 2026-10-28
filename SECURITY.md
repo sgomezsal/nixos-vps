@@ -85,8 +85,11 @@ audit. See
 
 Those live results cover the original TypeScript component. The experimental
 multi-language provider has also migrated one existing TypeScript test stack
-without cloud-resource changes, reinstalling or disabling protection. Fresh
-installations through that provider remain unverified. Subsequent live Python/Go
+without cloud-resource changes, reinstalling or disabling protection. A subsequent
+fresh installation through the published `0.2.0-dev.1`
+TypeScript SDK passed on one CX23 in Helsinki, including pinned readiness, a
+normal reboot and an unchanged repeat update. See
+[fresh-installation evidence](docs/validation.md#fresh-provider-installation). Earlier live Python/Go
 switches and a return to TypeScript also retained the existing resources,
 protection, SSH identity, generation and disk. Keep resource protection enabled
 during migration; an uncertain preview is not

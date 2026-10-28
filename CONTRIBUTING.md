@@ -1,7 +1,8 @@
 # Contributing
 
-Use x86_64 Linux, Node.js 22 or newer, and Nix with `nix-command` and `flakes`
-enabled. The development shell supplies Node, Pulumi, SSH and the installer.
+Use x86_64 Linux with Nix 2.24+ and `nix-command` and `flakes` enabled. The
+development shell supplies Node.js 22/npm, Pulumi, Git, OpenSSH and the installer;
+the provider shell additionally supplies Python and Go. Install Nix first.
 
 ## Build and test
 
@@ -66,8 +67,10 @@ also be checked through the independent tarball workflow.
 ## Release preparation
 
 Published versions cannot be overwritten. For a future release,
-choose a new version, update package metadata and the lockfile, and commit the
-changes. Keep the workspace root private. The release package defaults to the
+follow the [provider publication guide](docs/provider-publication.md) for the
+multi-language SDKs. The commands in this section apply only to `nixos-vps`.
+For that component, choose a new version, update package metadata and the lockfile,
+and commit the changes. Keep the workspace root private. The release package defaults to the
 public npm registry and the experimental `next` tag. Tags do not prove stability;
 the registry may also assign `latest` during a first publication.
 
@@ -77,6 +80,7 @@ From a clean checkout on x86_64 Linux:
 
 ```sh
 nix develop
+npm ci --ignore-scripts
 npm run release:prepare
 ```
 
@@ -214,3 +218,11 @@ This requires npm authentication and any additional verification requested by np
 It changes a distribution pointer, not the tarball or the `next` tag. `latest`
 means the recommended default installation; it is not a production-readiness
 guarantee. Keep the experimental status and validation limits visible.
+
+### Documentation in published packages
+
+GitHub documentation changes with the repository. npm and PyPI pages retain the
+README and descriptive metadata bundled in their published versions. Editing
+those source files does not update an existing registry artifact. Include the
+reviewed documentation in the next explicitly authorized release with a new
+version; never overwrite a release or present a rebuilt tarball as the original.

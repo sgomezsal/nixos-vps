@@ -5,7 +5,7 @@
   "homepage": "https://github.com/sgomezsal/nixos-vps",
   "repository": "https://github.com/sgomezsal/nixos-vps",
   "pluginDownloadURL": "github://api.github.com/sgomezsal/nixos-vps",
-  "description": "Remote component adapter for the shared nixos-vps implementation. Unreleased.",
+  "description": "Experimental remote component adapter for the shared nixos-vps implementation.",
   "resources": {
     "nixos-vps:hetzner:NixosServer": {
       "isComponent": true,

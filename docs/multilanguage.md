@@ -51,8 +51,11 @@ for the current release. A published TypeScript consumer has
 [migrated an existing Hetzner test stack](validation.md#live-typescript-provider-migration)
 without replacing or reinstalling the server. Subsequent
 [Python/Go switches and a return to TypeScript](validation.md#live-language-switches)
-retained that same state and server. Fresh installation through the new provider
-remains unverified.
+retained that same state and server. A subsequent
+[fresh installation](validation.md#fresh-provider-installation) through the
+published `0.2.0-dev.1` TypeScript SDK passed on a new CX23, including a normal
+reboot and an unchanged repeat update. Fresh creation through Python/Go was not
+separately executed.
 
 The resource token stays `nixos-vps:hetzner:NixosServer`. Its initial contract is
 checked against `packages/nixos-vps-provider/api-baseline.json`: sixteen inputs,
@@ -133,9 +136,10 @@ authorship: obtain the manifest and artifacts from the same trusted CI run.
 ## Local artifact installation
 
 For complete setup commands and runnable programs, follow the
-[three-language local quickstart](../examples/provider/README.md). It includes
+[three-language setup guide](../examples/provider/README.md). It includes
 key generation, real local Nix validation, language-specific dependencies and
-offline engine tests. The short commands below are only artifact installation.
+offline engine tests. It uses published packages by default; use the local
+artifact commands below in a separate project when testing previews. The short commands below are only artifact installation.
 
 Use a disposable local project/backend for preview testing. Do not migrate an
 existing cloud stack merely to try the SDK. Download or copy the whole artifact
@@ -239,9 +243,9 @@ stop on any cloud create, replacement, deletion or setting change.
 
 The provider workflow neither accesses a live project nor creates a VPS.
 
-## Next live validation
+## Migration review reference
 
-The migration and all three language switches below passed on one existing test
+The migration and all three language switches passed on one existing test
 server; see [live evidence](validation.md#live-language-switches). Fresh
 installation through the provider remains a separate validation requirement.
 The sequence remains a reference for future reviewed migrations. Keep
@@ -265,5 +269,29 @@ operational files and state outside this repository:
 
 Record actual results before expanding the validation claim. Reusing an installed
 server cannot establish that the new provider's initial installation works on a
-fresh VPS. That remains a separate test requiring an explicit cost and resource
-decision. Do not create another server as an automatic migration fallback.
+fresh VPS. The subsequent fresh TypeScript test required its own explicit cost and resource
+decision; it was not an automatic migration fallback. Do not create another server as an automatic migration fallback.
+
+## Fresh-server validation and capacity
+
+The published `0.2.0-dev.1` TypeScript SDK completed a fresh CX23 installation
+on 2026-10-28 after capacity returned. The earlier capacity-blocked attempt was
+not counted as a pass. The old disposable test server and its IPs were removed
+before the new server was created, keeping at most one test VPS. Pinned SSH/HTTP,
+a normal reboot and an unchanged repeat preview/update passed. See
+[executed evidence](validation.md#fresh-provider-installation). This does not
+establish fresh creation through Python/Go, other plans or other boot modes.
+
+The reusable component accepts x86_64 CX, CPX and CCX plans; it is not restricted
+to the plan used by the test consumer. Choose an explicit plan and location,
+check current pricing and capacity, and leave RAM headroom for kexec. ARM/CAX
+requires a different target configuration and is unsupported by this release.
+Only CX23 has live installation evidence, through the original component and
+the TypeScript provider SDK.
+
+Provider availability is not a reservation. Keep an existing server protected
+while evaluating alternatives; never automatically choose a more expensive plan
+or delete a working server to try to free capacity. Local validation does not
+check prices or reserve cloud resources. For a current availability query, use
+Hetzner's server-type `locations[].available` field; the retired datacenters
+endpoint must not be used. See the [official API](https://docs.hetzner.cloud/reference/cloud).

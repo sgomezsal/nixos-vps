@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+- Record a fresh CX23 installation through the published `0.2.0-dev.1`
+  TypeScript SDK and plugin, delegating to unchanged `nixos-vps@0.1.2`.
+  Pinned SSH/HTTP, a normal reboot and an unchanged repeat preview/update passed.
+  The old disposable test server was retired before creation; no second concurrent
+  test VPS or paid add-on was used. See [evidence](docs/validation.md#fresh-provider-installation).
+- Refresh user setup and capacity guidance; distinguish public SDK installation
+  from local preview artifacts and historical validation records.
+
 ## 0.2.0-dev.1 — 2026-10-28
 
 - Add independent public-distribution smoke tests and supply the C++ runtime
@@ -12,7 +22,7 @@
 - Verify live TypeScript → Python → Go → TypeScript switches with the published
   SDKs on the same stack. Every preview and saved-plan update was unchanged;
   resources, protection, SSH/HTTP readiness, generation and disk were retained.
-  Fresh installation through the provider remains unverified.
+  At that stage, fresh installation through the provider remained unverified.
 - Detect opaque alphanumeric Hetzner token assignments in credential scans, with
   regression coverage for detection, safe output and example placeholders.
 
@@ -23,8 +33,9 @@
   the first verification window; a verification-only retry passed without
   republishing. Keep scoped `next` on this version and leave `latest` unchanged.
 
-Fresh provider installation on Hetzner remains unverified. This release did not
-access Hetzner or modify the live test VPS.
+At publication, fresh provider installation on Hetzner remained unverified.
+The release workflow did not access Hetzner or modify a VPS; the later authorized
+fresh-server test is recorded above.
 
 ## 0.2.0-dev.0 — 2026-10-28
 

@@ -1,4 +1,6 @@
 # Copy to Pulumi.<your-stack>.yaml and replace these absolute paths.
+# Select a currently offered x86_64 plan and review its cost/capacity before use.
+# cpx22 below is the component compatibility default, not an availability guarantee.
 config:
   nixos-vps-example:sshPublicKeyPath: /absolute/path/to/id_ed25519.pub
   nixos-vps-example:sshPrivateKeyPath: /absolute/path/to/id_ed25519
