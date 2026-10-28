@@ -88,10 +88,10 @@ The [experimental component provider](packages/nixos-vps-provider/README.md)
 has a published `0.2.0-dev.0` prerelease with TypeScript, Python and Go SDKs.
 It is separate from the existing `nixos-vps@0.1.2` package. See the
 [multi-language guide](docs/multilanguage.md) for exact installation commands,
-platform requirements and migration limits. Its TypeScript SDK has migrated an
-existing test VPS without cloud resource changes or another installation;
-[live migration evidence](docs/validation.md#live-typescript-provider-migration)
-records the result and remaining tests.
+platform requirements and migration limits. An existing test VPS passed migration
+and TypeScript → Python → Go → TypeScript switches without infrastructure changes
+or another installation. See [live validation](docs/validation.md#live-language-switches)
+for the evidence and remaining tests.
 
 With Nix flakes enabled on x86_64 Linux:
 

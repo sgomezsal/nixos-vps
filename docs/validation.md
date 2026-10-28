@@ -35,9 +35,9 @@ private consumer directory or the known test-server IP/identifier.
 
 No Hetzner account, VPS, cloud operation or registry publication was used during
 this offline review. The subsequent
-[live TypeScript migration](#live-typescript-provider-migration) passed. Remaining
-integration work is live Python/Go language switching, fresh installation through
-the new provider and its first npm OIDC upload.
+[live TypeScript migration](#live-typescript-provider-migration) and
+[language switches](#live-language-switches) passed. Remaining integration work
+is fresh installation through the new provider and its first npm OIDC upload.
 
 ## What is tested
 
@@ -465,4 +465,46 @@ No Hetzner resource was created, updated, replaced or deleted. No additional
 server, reboot, partitioning, reinstall or package publication occurred.
 Operational state, keys, plans and server identifiers remain outside this public
 repository. This verifies TypeScript migration of an installed server, not a
-fresh installation through the new provider or live Python/Go language switches.
+fresh installation through the new provider. The later language-switch checks
+are recorded below.
+
+## Live language switches
+
+On 2026-10-28 the existing dedicated test stack completed this sequence using
+published SDKs, the same provider plugin, backend, keys, flake and protected CX23. The
+[source CI](https://github.com/sgomezsal/nixos-vps/actions/runs/40652355352) passed
+separately; the checks below ran in the independent live consumer.
+
+
+| Switch | Published SDK version | Preview and saved-plan update |
+| --- | --- | --- |
+| TypeScript baseline | npm `0.2.0-dev.0` | Unchanged |
+| TypeScript → Python | PyPI `0.2.0.dev0` | Unchanged |
+| Python → Go | Go `v0.2.0-dev.0` | Unchanged |
+| Go → TypeScript | npm `0.2.0-dev.0` | Unchanged |
+
+Each preview used `--expect-no-changes`. The controller independently checked
+all ten resource plans and refused any step other than `same` before executing
+an update constrained to that saved plan. Canonical fingerprints of decrypted
+resource IDs, inputs, outputs, provider references and protection matched the
+TypeScript baseline after every update. Plaintext comparisons remained in
+memory; checkpoint exports were encrypted and operational evidence stayed private.
+
+Python used an isolated virtual environment installed directly from PyPI and
+passed dependency/import checks. Go resolved the public version through the Go
+proxy without a local `replace`, compiled successfully and used Pulumi's normal
+Go source loader. Module versions/checksums were locked before the credentialed
+runtime; dependency downloads were disabled and the module graph was read-only
+during its live checks. Python used the pinned Nix shell's C++ runtime for gRPC on NixOS.
+
+The same logical name, physical server name, disabled backups, single-server
+budget guard and remote-compatible protection transforms were retained in each
+program. Ready IP/server-ID outputs, pinned SSH, SSH/Caddy readiness, the test
+marker and public HTTP 200 passed after every language switch. Boot ID, system
+generation, root disk and partitions matched the initial snapshot. No cloud
+resource was created, changed, replaced or deleted, and no reinstall or reboot
+occurred. The consumer was left in TypeScript with all language sources retained.
+
+These checks verify interoperability on an installed server, not initial
+installation through the new provider, arbitrary target configurations or
+additional supported platforms. No package was published as part of these tests.

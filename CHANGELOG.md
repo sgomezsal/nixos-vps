@@ -8,8 +8,11 @@
   saved local-preflight plan before the full preview. A live TypeScript migration
   with the published SDK passed on the existing VPS, retaining cloud resources,
   protection, SSH identity, system and disk. An unchanged preview and repeated
-  saved-plan update passed. Live Python/Go switches and fresh provider installs
-  remain unverified.
+  saved-plan update passed.
+- Verify live TypeScript → Python → Go → TypeScript switches with the published
+  SDKs on the same stack. Every preview and saved-plan update was unchanged;
+  resources, protection, SSH/HTTP readiness, generation and disk were retained.
+  Fresh installation through the provider remains unverified.
 - Detect opaque alphanumeric Hetzner token assignments in credential scans, with
   regression coverage for detection, safe output and example placeholders.
 

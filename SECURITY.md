@@ -86,6 +86,8 @@ audit. See
 Those live results cover the original TypeScript component. The experimental
 multi-language provider has also migrated one existing TypeScript test stack
 without cloud-resource changes, reinstalling or disabling protection. Fresh
-installations through that provider and live Python/Go switches remain unverified.
-Keep resource protection enabled during migration; an uncertain preview is not
+installations through that provider remain unverified. Subsequent live Python/Go
+switches and a return to TypeScript also retained the existing resources,
+protection, SSH identity, generation and disk. Keep resource protection enabled
+during migration; an uncertain preview is not
 evidence that a replacement is safe.

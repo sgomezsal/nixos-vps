@@ -48,8 +48,10 @@ unscoped `nixos-vps` package remains at `0.1.2`.
 See [publication evidence](validation.md#multi-language-prerelease-distribution)
 for public download and consumer checks. A published TypeScript consumer has
 [migrated an existing Hetzner test stack](validation.md#live-typescript-provider-migration)
-without replacing or reinstalling the server. Fresh installation through the new
-provider and live Python/Go switches remain unverified.
+without replacing or reinstalling the server. Subsequent
+[Python/Go switches and a return to TypeScript](validation.md#live-language-switches)
+retained that same state and server. Fresh installation through the new provider
+remains unverified.
 
 The resource token stays `nixos-vps:hetzner:NixosServer`. Its initial contract is
 checked against `packages/nixos-vps-provider/api-baseline.json`: sixteen inputs,
@@ -217,7 +219,8 @@ updates absolute local runner paths, executing preflight and the non-destructive
 installation update command. It does not reinstall NixOS or change cloud resources
 in those tests. Later unchanged deployments and switches to Python/Go are no-ops.
 
-One existing TypeScript stack has been migrated with the published SDK. Legacy
+One existing TypeScript stack has been migrated with the published SDK; live
+Python and Go switches also retained its resources. Legacy
 JavaScript `transformations` callbacks
 do not cross the remote component boundary. Use Pulumi's newer `transforms`
 option for such policies and test the exact consumer before migration. Direct
@@ -237,11 +240,11 @@ The provider workflow neither accesses a live project nor creates a VPS.
 
 ## Next live validation
 
-The TypeScript migration below passed on one existing test server; see
-[live evidence](validation.md#live-typescript-provider-migration). The next live
-checks are equivalent Python and Go consumers against that same state. The full
-sequence remains a reference for future reviewed migrations. Keep operational
-files and state outside this repository:
+The migration and all three language switches below passed on one existing test
+server; see [live evidence](validation.md#live-language-switches). Fresh
+installation through the provider remains a separate validation requirement.
+The sequence remains a reference for future reviewed migrations. Keep
+operational files and state outside this repository:
 
 1. Require successful CI for the source under review. Back up the consumer,
    lockfile and encrypted Pulumi state; retain the existing keys and flake.
