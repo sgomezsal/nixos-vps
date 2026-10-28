@@ -67,6 +67,8 @@
         };
         devShells.provider = pkgs.mkShell {
           inputsFrom = [ self.devShells.${system}.default ];
+          # PyPI's gRPC wheel needs the C++ runtime when used on NixOS.
+          LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath [ pkgs.stdenv.cc.cc.lib ];
           packages = [
             (pkgs.python3.withPackages (ps: [ ps.build ps.setuptools ps.wheel ]))
             pkgs.go pkgs.gnutar pkgs.gzip

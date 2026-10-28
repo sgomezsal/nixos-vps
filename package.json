@@ -19,7 +19,8 @@
     "provider:prepare": "node scripts/provider-release.cjs prepare .provider-release",
     "provider:verify": "node scripts/provider-release.cjs verify .provider-release",
     "provider:candidate": "node scripts/provider-release.cjs candidate .provider-candidate",
-    "provider:candidate:verify": "node scripts/provider-release.cjs verify-candidate .provider-candidate"
+    "provider:candidate:verify": "node scripts/provider-release.cjs verify-candidate .provider-candidate",
+    "test:provider:public": "node scripts/test-provider-public.cjs"
   },
   "devDependencies": {
     "@actions/glob": "0.6.1",

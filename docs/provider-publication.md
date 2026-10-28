@@ -94,9 +94,10 @@ package instead. Use the validated candidate tarball with public access and the
 See [npm trusted publishing](https://docs.npmjs.com/trusted-publishers/).
 
 No registry authorization is inferred from local compilation, an available name
-or an npm login. Actual OIDC uploads can only be confirmed by a future authorized
-publication. Keep the publication gate disabled until those prerequisites and
-the candidate review are complete.
+or an npm login. The first PyPI OIDC upload is verified in the
+[distribution evidence](validation.md#multi-language-prerelease-distribution).
+The initial npm upload used interactive authentication; npm OIDC remains untested.
+Keep the publication gate disabled until prerequisites and candidate review are complete.
 
 ## Future publication order
 

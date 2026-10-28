@@ -1,8 +1,9 @@
 # nixos-vps component provider
 
-**Unreleased development workspace.** This package is private and is not installed
-by existing consumers of the published `nixos-vps` npm package. No provider or
-language SDK has been published.
+**Private development workspace for an experimental provider.** The
+`0.2.0-dev.0` plugin and generated language SDKs are published separately.
+Existing consumers of `nixos-vps@0.1.2` do not install this workspace. See the
+[multi-language guide](../../docs/multilanguage.md) for public installation.
 
 The provider hosts the existing TypeScript `NixosServer` through Pulumi's
 component-provider protocol. It keeps `nixos-vps:hetzner:NixosServer`, the child

@@ -318,3 +318,52 @@ vulnerability review. Credential scans cover known patterns and inspected files,
 rather than every possible form of secret. Registry tags are mutable distribution
 pointers; exact versions, source commits and artifact integrity are checked
 separately.
+
+## Multi-language prerelease distribution
+
+The published experimental provider is built from commit
+`5a217d3d74220dbc1b1338088cea8c4b9eb925ca`. The stable unscoped
+`nixos-vps@0.1.2` package and its `latest`/`next` tags were unchanged.
+
+Executed evidence:
+
+- [Source CI](https://github.com/sgomezsal/nixos-vps/actions/runs/40637040096)
+  passed local validation and provider artifact preparation. The candidate suite
+  passed 53 core and 19 provider tests, with no failures or skips.
+- [GitHub publication](https://github.com/sgomezsal/nixos-vps/actions/runs/40639738722)
+  published the [prerelease assets](https://github.com/sgomezsal/nixos-vps/releases/tag/v0.2.0-dev.0)
+  and Go submodule tag. The public Go proxy download matched the committed SDK source.
+- npm accepted the exact candidate `@sgomezsal/nixos-vps@0.2.0-dev.0`
+  with interactive account verification. A subsequent registry download matched
+  the candidate's SHA-256. This verifies publication, not npm OIDC or provenance.
+- [PyPI publication](https://github.com/sgomezsal/nixos-vps/actions/runs/40640717676)
+  passed with trusted-publisher OIDC and attestations. Both downloaded Python
+  distributions matched the candidate's SHA-256.
+- Independent empty-HOME consumers installed the plugin from its GitHub URL,
+  installed the npm SDK and checked CommonJS/ESM imports and TypeScript types,
+  installed the PyPI wheel and passed `pip check` and imports, and compiled a
+  Go consumer using the public module without a local replacement.
+
+The Python consumer initially failed on NixOS because gRPC's wheel could not
+load `libstdc++.so.6`. The provider development shell now supplies that runtime;
+the same independent installation and import check then passed. The first local
+Go consumer fixture also needed its module cache moved to a hidden directory so
+`go mod tidy` would not interpret the cache as application source. Neither fix
+changed a published artifact.
+
+Repeat the read-only public distribution checks from the provider shell:
+
+```sh
+nix develop .#provider --command npm run test:provider:public
+```
+
+This uses disposable projects and public network downloads. It does not construct
+cloud resources, connect to a VPS or load operator credentials. It tests exact
+versions, not mutable registry tags. Full Pulumi engine behavior is covered by the
+separate loopback provider suite; these public smoke tests do not replace it.
+
+The GitHub publication gate was reset to `false`. Future npm automation requires
+the scoped package's trusted publisher to be configured and exercised; the first
+manual npm publication does not establish that trust. No Hetzner account or
+server was accessed during this distribution check. The new provider and SDKs
+still require a separately authorized live deployment/migration test.

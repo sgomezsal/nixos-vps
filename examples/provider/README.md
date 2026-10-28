@@ -1,7 +1,9 @@
 # Run a preview SDK from local artifacts
 
-Choose one language and a new directory. These examples are for the unpublished
-`0.2.0-dev.0` provider, not a replacement for the published package quickstart.
+Choose one language and a new directory. These examples exercise local preview
+artifacts for the experimental `0.2.0-dev.0` provider. For the published SDKs,
+use the [registry installation commands](../../docs/multilanguage.md#install-the-published-prerelease).
+This guide does not replace the stable package quickstart.
 Installation on a real server formats its disk. None of the setup or validation
 commands below creates a server.
 
@@ -99,7 +101,7 @@ runtime. Keep your environment lockfile for transitive dependencies.
 
 ### Go
 
-Extract the unpublished module outside the consumer project:
+Extract the local artifact module outside the consumer project:
 
 ```sh
 export LOCAL_MODULE="$(mktemp -d /tmp/nixos-vps-preview-go-XXXXXX)"
