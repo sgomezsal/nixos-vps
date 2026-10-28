@@ -96,8 +96,10 @@ the initial migration updates local preflight/update commands without running
 installation again or changing cloud resources. Legacy callbacks do not cross the
 provider boundary; remote-compatible `transforms` and protected migration plans
 are covered in the [migration limits](multilanguage.md#migration-limits). Direct
-child-resource access is outside that compatibility guarantee. No live stack has
-been migrated to this provider.
+child-resource access is outside that compatibility guarantee. A published
+TypeScript SDK has migrated one existing test stack without changing cloud
+resources; live Python/Go switches and fresh provider installations remain
+unverified. See [live migration evidence](validation.md#live-typescript-provider-migration).
 
 The provider preview pipeline installs its locked runtime, generates the SDKs
 with a pinned CLI and packages their public entry points. Two builds from separate

@@ -34,10 +34,10 @@ The inspected tracked files contained no references to the private repository,
 private consumer directory or the known test-server IP/identifier.
 
 No Hetzner account, VPS, cloud operation or registry publication was used during
-this review. Remaining integration work is the
-[live migration plan](multilanguage.md#next-live-validation), followed by its
-reviewed application and language-switch checks. A fresh installation through
-the new provider and its first npm OIDC upload remain separate unverified paths.
+this offline review. The subsequent
+[live TypeScript migration](#live-typescript-provider-migration) passed. Remaining
+integration work is live Python/Go language switching, fresh installation through
+the new provider and its first npm OIDC upload.
 
 ## What is tested
 
@@ -402,8 +402,8 @@ creation of the scoped package's GitHub trusted publisher for
 permission. Configuration is verified by npm's successful creation response;
 an actual npm OIDC upload has not yet been exercised. The first manual npm
 publication does not test that upload path. No Hetzner account or
-server was accessed during this distribution check. The new provider and SDKs
-still require a separately authorized live deployment/migration test.
+server was accessed during this distribution check. The separately authorized
+[live TypeScript migration](#live-typescript-provider-migration) below followed it.
 
 ### Protected consumer migration
 
@@ -425,3 +425,44 @@ This establishes a local migration strategy, not permission to apply an uncertai
 live plan. The real target-only plan must be reviewed independently and must not
 include cloud operations. Keep protection enabled and stop if the subsequent
 full plan proposes cloud changes. No live stack was migrated by this test.
+
+## Live TypeScript provider migration
+
+On 2026-10-28, the published `@sgomezsal/nixos-vps@0.2.0-dev.0` SDK and matching
+GitHub plugin migrated the existing dedicated CX23 test stack from the original
+`nixos-vps@0.1.2` component. The reviewed source was `86e3fc9`; its
+[complete CI](https://github.com/sgomezsal/nixos-vps/actions/runs/40647897103)
+passed before the migration. This test used real Pulumi, the published plugin
+and actual provider state, rather than loopback cloud substitutes.
+
+A private source backup and encrypted checkpoint preceded the migration. The
+plugin's bundled installer matched all 20 installed 0.1.2 package files. Cloud
+and command provider versions, keys, flake and stack identity were retained.
+The remote-compatible transform kept the fixed server name, disabled backups,
+protection and single-server/budget guards.
+
+The initial preview blocked protected replacement proposals caused by unknown
+preflight outputs. A reviewed saved plan updated only the local preflight and
+registered the local provider. The next full saved plan contained one local
+installation-command update, changing its `create`/`update` executable paths;
+its triggers were unchanged. That exact checksum-verified plan was applied.
+The nonempty `update` handler retained the installation. Cloud resource IDs,
+URNs, decrypted input values and protection matched before/after; decrypted
+comparisons stayed in memory and were not written or logged. The installation
+resource ID also stayed unchanged.
+
+Verification passed:
+
+- Ready IP and server-ID outputs identify the original server.
+- `pulumi preview --expect-no-changes` succeeded; all ten resource plans were
+  unchanged. A second update constrained to that no-op plan also passed, with
+  identical resource IDs, inputs, outputs and protection.
+- Pinned SSH, active SSH/Caddy services, no failed units, the expected test marker
+  and public HTTP 200 passed. Boot ID, system generation, root disk and partitions
+  were unchanged.
+
+No Hetzner resource was created, updated, replaced or deleted. No additional
+server, reboot, partitioning, reinstall or package publication occurred.
+Operational state, keys, plans and server identifiers remain outside this public
+repository. This verifies TypeScript migration of an installed server, not a
+fresh installation through the new provider or live Python/Go language switches.

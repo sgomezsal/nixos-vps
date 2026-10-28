@@ -46,8 +46,10 @@ for the new scoped package; that does not make this provider stable. The separat
 unscoped `nixos-vps` package remains at `0.1.2`.
 
 See [publication evidence](validation.md#multi-language-prerelease-distribution)
-for public download and consumer checks. The new provider has not been deployed
-to Hetzner; its engine and migration tests use loopback substitute providers.
+for public download and consumer checks. A published TypeScript consumer has
+[migrated an existing Hetzner test stack](validation.md#live-typescript-provider-migration)
+without replacing or reinstalling the server. Fresh installation through the new
+provider and live Python/Go switches remain unverified.
 
 The resource token stays `nixos-vps:hetzner:NixosServer`. Its initial contract is
 checked against `packages/nixos-vps-provider/api-baseline.json`: sixteen inputs,
@@ -215,7 +217,8 @@ updates absolute local runner paths, executing preflight and the non-destructive
 installation update command. It does not reinstall NixOS or change cloud resources
 in those tests. Later unchanged deployments and switches to Python/Go are no-ops.
 
-No live stack has been migrated. Legacy JavaScript `transformations` callbacks
+One existing TypeScript stack has been migrated with the published SDK. Legacy
+JavaScript `transformations` callbacks
 do not cross the remote component boundary. Use Pulumi's newer `transforms`
 option for such policies and test the exact consumer before migration. Direct
 access to child resources is outside this contract.
@@ -234,9 +237,11 @@ The provider workflow neither accesses a live project nor creates a VPS.
 
 ## Next live validation
 
-The next integration check is migration of an existing disposable test server,
-not a fresh installation. Complete these steps in its independent consumer
-project, keeping operational files and state outside this repository:
+The TypeScript migration below passed on one existing test server; see
+[live evidence](validation.md#live-typescript-provider-migration). The next live
+checks are equivalent Python and Go consumers against that same state. The full
+sequence remains a reference for future reviewed migrations. Keep operational
+files and state outside this repository:
 
 1. Require successful CI for the source under review. Back up the consumer,
    lockfile and encrypted Pulumi state; retain the existing keys and flake.

@@ -5,7 +5,11 @@
 - Add independent public-distribution smoke tests and supply the C++ runtime
   needed by Python gRPC wheels in the provider development shell on NixOS.
 - Verify protected consumer migration with remote-compatible transforms and a
-  saved local-preflight plan before the full preview. Live migration is pending.
+  saved local-preflight plan before the full preview. A live TypeScript migration
+  with the published SDK passed on the existing VPS, retaining cloud resources,
+  protection, SSH identity, system and disk. An unchanged preview and repeated
+  saved-plan update passed. Live Python/Go switches and fresh provider installs
+  remain unverified.
 - Detect opaque alphanumeric Hetzner token assignments in credential scans, with
   regression coverage for detection, safe output and example placeholders.
 

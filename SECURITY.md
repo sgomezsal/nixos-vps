@@ -84,7 +84,8 @@ audit. See
 [validation coverage](docs/validation.md).
 
 Those live results cover the original TypeScript component. The experimental
-multi-language provider has passed local engine and public distribution checks,
-but no live stack migration or fresh installation through that provider has
-been verified. Keep resource protection enabled during migration; an uncertain
-preview is not evidence that a replacement is safe.
+multi-language provider has also migrated one existing TypeScript test stack
+without cloud-resource changes, reinstalling or disabling protection. Fresh
+installations through that provider and live Python/Go switches remain unverified.
+Keep resource protection enabled during migration; an uncertain preview is not
+evidence that a replacement is safe.
