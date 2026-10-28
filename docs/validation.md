@@ -167,6 +167,36 @@ validate arbitrary alternative targets or replace language-specific checks.
 The remote SDKs remain unpublished. No Hetzner account, live consumer, cloud
 resource or package registry publication was used in this check.
 
+### Publication preparation
+
+On 2026-10-28, local candidate preparation produced matching SHA-256 values for
+all six artifacts across two independent builds. The publication-enabled npm
+SDK, Python wheel/sdist, Go source and plugin passed the same independent-consumer
+and real-engine checks, including the three source-language examples. Candidate
+verification and byte-for-byte comparison with `sdk/go/nixosvps` passed. This was
+a dirty development-tree candidate for review, not an authorized upload.
+
+Publication tests exercise manual-workflow identity, disabled gates, forks,
+dirty/different sources, incorrect tags, preview/candidate separation, pending
+registry processing, downloaded-byte mismatches, partial Python uploads and
+interrupted GitHub drafts. HTTP requests and publishing APIs in those tests are
+substituted locally; they do not prove live registry authorization. Workflow
+syntax is checked with `actionlint`.
+
+The GitHub environments `pypi` and `provider-release` were configured and read
+back: reviewer `sgomezsal`, only branch `main`, self-approval allowed for the solo
+maintainer. Repository variable `PROVIDER_RELEASE_ENABLED=false` was read back.
+The existing npm environment was inspected, not replaced. Public npm/PyPI
+metadata returned 404 for the new SDK names; that is not a name reservation.
+The account owner reported registering the PyPI pending publisher; its private
+account configuration has not been independently inspected.
+
+No provider tag, GitHub release, registry upload or cloud operation occurred in
+these preparation checks. Actual npm/PyPI OIDC authorization, public plugin/Go
+distribution and provider-specific live behavior still require separately
+authorized execution. See [publication](provider-publication.md) for the remaining
+npm bootstrap and release order.
+
 ## Live Hetzner test
 
 On 2026-10-27, an independent consumer installed `nixos-vps@0.1.1` from npm

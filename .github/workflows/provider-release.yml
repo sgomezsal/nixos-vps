@@ -1,0 +1,186 @@
+# Manual prerelease distribution only. Disabled until explicitly enabled and approved.
+name: Prepare or publish multi-language provider
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Prepare only, or publish one destination after review
+        type: choice
+        options: [prepare, github, npm, pypi]
+        default: prepare
+        required: true
+permissions:
+  contents: read
+concurrency:
+  group: provider-release
+  cancel-in-progress: false
+jobs:
+  prepare:
+    if: github.repository == 'sgomezsal/nixos-vps' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - name: Require successful validation of this commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run list --repo "$GITHUB_REPOSITORY" --workflow ci.yml --commit "$GITHUB_SHA" \
+            --status success --json headSha,conclusion --limit 20 > "$RUNNER_TEMP/provider-ci.json"
+          jq -e --arg sha "$GITHUB_SHA" 'any(.[]; .headSha == $sha and .conclusion == "success")' "$RUNNER_TEMP/provider-ci.json"
+      - uses: cachix/install-nix-action@ba0dd844c9180cbf77aa72a116d6fbc515d0e87b # v27
+        with:
+          install_url: https://releases.nixos.org/nix/nix-2.34.8/install
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      - name: Build and test reproducible publication candidates
+        run: |
+          nix develop .#provider --command bash -euo pipefail -c '
+            npm ci --ignore-scripts
+            npm run provider:candidate
+            npm run provider:candidate:verify
+            node - <<"JS"
+          const {verify,sourceIdentity}=require("./scripts/provider-release.cjs");
+          const {verifyGoSource}=require("./scripts/provider-publish.cjs");
+          const manifest=verify(".provider-candidate",true,true), source=sourceIdentity();
+          if(source.dirty || manifest.source.dirty || source.commit!==process.env.GITHUB_SHA ||
+            manifest.source.commit!==source.commit || manifest.source.sha256!==source.sha256)
+            throw Error("Candidate must match the clean workflow commit");
+          verifyGoSource(".provider-candidate",manifest);
+          JS
+          '
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: provider-candidate-${{ github.sha }}
+          archive: true
+          include-hidden-files: true
+          path: .provider-candidate/*
+          if-no-files-found: error
+          retention-days: 7
+      - name: Explain disabled publication
+        if: inputs.target != 'prepare' && vars.PROVIDER_RELEASE_ENABLED != 'true'
+        run: |
+          echo 'Candidate prepared; publication is disabled. Enable PROVIDER_RELEASE_ENABLED only after release review.' >> "$GITHUB_STEP_SUMMARY"
+  github:
+    needs: prepare
+    if: inputs.target == 'github' && vars.PROVIDER_RELEASE_ENABLED == 'true'
+    environment: provider-release
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: cachix/install-nix-action@ba0dd844c9180cbf77aa72a116d6fbc515d0e87b # v27
+        with:
+          install_url: https://releases.nixos.org/nix/nix-2.34.8/install
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: provider-candidate-${{ github.sha }}
+          digest-mismatch: error
+          path: .provider-candidate
+      - name: Publish verified plugin assets and Go module tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PROVIDER_RELEASE_ENABLED: ${{ vars.PROVIDER_RELEASE_ENABLED }}
+          PROVIDER_RELEASE_TARGET: github
+        run: nix develop .#provider --command node scripts/provider-publish.cjs publish-github .provider-candidate
+      - name: Verify public Go module resolution
+        run: |
+          nix develop .#provider --command bash -euo pipefail <<'SH'
+            export GOPROXY=https://proxy.golang.org GOSUMDB=sum.golang.org
+            export GOMODCACHE="$RUNNER_TEMP/provider-go-modules" GOCACHE="$RUNNER_TEMP/provider-go-build" GOFLAGS=-modcacherw
+            version=$(node -p 'require("./.provider-candidate/manifest.json").version')
+            go mod download -json "github.com/sgomezsal/nixos-vps/sdk/go/nixosvps@v$version" > "$RUNNER_TEMP/provider-go-download.json"
+            node - <<'JS'
+          const fs=require('node:fs');
+          const {verify}=require('./scripts/provider-release.cjs');
+          const {verifyGoSource}=require('./scripts/provider-publish.cjs');
+          const downloaded=JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP+'/provider-go-download.json'));
+          verifyGoSource('.provider-candidate',verify('.provider-candidate',true,true),downloaded.Dir);
+          console.log('VERIFIED: public Go module matches the candidate source.');
+          JS
+          SH
+  npm:
+    needs: prepare
+    if: inputs.target == 'npm' && vars.PROVIDER_RELEASE_ENABLED == 'true'
+    environment: npm
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: cachix/install-nix-action@ba0dd844c9180cbf77aa72a116d6fbc515d0e87b # v27
+        with:
+          install_url: https://releases.nixos.org/nix/nix-2.34.8/install
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: provider-candidate-${{ github.sha }}
+          digest-mismatch: error
+          path: .provider-candidate
+      - name: Guard identity and check registry before publication
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PROVIDER_RELEASE_ENABLED: ${{ vars.PROVIDER_RELEASE_ENABLED }}
+          PROVIDER_RELEASE_TARGET: npm
+        run: nix develop .#provider --command node scripts/provider-publish.cjs preflight .provider-candidate npm
+      - name: Publish scoped SDK with OIDC
+        if: steps.check.outputs.exists != 'true'
+        run: |
+          nix develop .#provider --command bash -euo pipefail <<'SH'
+            artifact=$(node -p 'require("./.provider-candidate/manifest.json").artifacts.nodejs.filename')
+            npm exec --yes --package=npm@11.15.0 -- npm publish ".provider-candidate/$artifact" \
+              --ignore-scripts --access public --tag next --provenance --registry=https://registry.npmjs.org/
+          SH
+      - name: Download and verify published SDK
+        run: nix develop .#provider --command node scripts/provider-publish.cjs verify .provider-candidate npm
+  pypi:
+    needs: prepare
+    if: inputs.target == 'pypi' && vars.PROVIDER_RELEASE_ENABLED == 'true'
+    environment: pypi
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: cachix/install-nix-action@ba0dd844c9180cbf77aa72a116d6fbc515d0e87b # v27
+        with:
+          install_url: https://releases.nixos.org/nix/nix-2.34.8/install
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: provider-candidate-${{ github.sha }}
+          digest-mismatch: error
+          path: .provider-candidate
+      - name: Guard identity and stage only missing Python distributions
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PROVIDER_RELEASE_ENABLED: ${{ vars.PROVIDER_RELEASE_ENABLED }}
+          PROVIDER_RELEASE_TARGET: pypi
+        run: nix develop .#provider --command node scripts/provider-publish.cjs preflight .provider-candidate pypi
+      - name: Publish Python distributions with OIDC and attestations
+        if: steps.check.outputs.exists != 'true'
+        uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e # v1.13.0
+        with:
+          packages-dir: .provider-upload/
+          attestations: true
+      - name: Download and verify published Python distributions
+        run: nix develop .#provider --command node scripts/provider-publish.cjs verify .provider-candidate pypi

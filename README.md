@@ -93,7 +93,7 @@ and publication-disabled artifact workflow.
 With Nix flakes enabled on x86_64 Linux:
 
 ```sh
-nix develop
+nix develop .#provider
 npm ci --ignore-scripts
 npm run check
 npm test

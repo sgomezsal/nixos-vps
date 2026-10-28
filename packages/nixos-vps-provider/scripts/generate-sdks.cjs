@@ -15,11 +15,11 @@ function generate(destination, options={}) {
     const result=cp.spawnSync('pulumi',['package','gen-sdk',schema,'--language',language,'--out',output],{encoding:'utf8',timeout:120000,env:options.env||process.env});
     if(result.status!==0)throw Error('SDK generation failed for '+language+': '+(result.stderr||result.error?.message||''));
   }
-  // Generated SDKs stay local until runtime/migration and distribution tests pass.
+  // Publication candidates are explicit; ordinary generation stays private.
   // Engine-driven plugin acquisition does not require an npm install hook.
   const node=path.join(output,'nodejs/package.json');
   const version=require('../package.json').version;
-  const metadata=JSON.parse(fs.readFileSync(node));metadata.private=true;metadata.version=version;
+  const metadata=JSON.parse(fs.readFileSync(node));metadata.private=options.publication!==true;metadata.version=version;
   metadata.name=contract.npmPackage;
   metadata.license='MIT';metadata.repository={type:'git',url:'https://github.com/sgomezsal/nixos-vps.git'};
   metadata.dependencies={'@pulumi/pulumi':require('../runtime/package.json').dependencies['@pulumi/pulumi']};
@@ -57,7 +57,7 @@ function generate(destination, options={}) {
     const location=path.join(output,file),plugin=JSON.parse(fs.readFileSync(location));
     fs.writeFileSync(location,JSON.stringify({...plugin,version},null,2)+'\n');
   }
-  const readme=`# nixos-vps\n\nExperimental Pulumi component SDK (${version}).\n\nCreates a new Hetzner server, firewall and SSH key registration, then installs\nNixOS using the shared nixos-vps installer. Installation formats the target disk.\nNode.js 22+, Nix, OpenSSH and Pulumi are required on x86_64 Linux for every SDK.\n\nThis preview has not been published. Install the matching locally validated\nplugin and SDK artifacts; see the [multi-language guide](https://github.com/sgomezsal/nixos-vps/blob/main/docs/multilanguage.md)\nfor examples, prerequisites and the tested migration limits.\n\nThe original npm package nixos-vps remains a separate TypeScript interface.\nThis SDK delegates to the same component through the local provider process.\n\nLicensed under MIT.\n`;
+  const readme=`# nixos-vps\n\nExperimental Pulumi component SDK (${version}).\n\nCreates a new Hetzner server, firewall and SSH key registration, then installs\nNixOS using the shared nixos-vps installer. Installation formats the target disk.\nNode.js 22+, Nix, OpenSSH and Pulumi are required on x86_64 Linux for every SDK.\n\nUse matching plugin and SDK versions. Availability and installation instructions\nare documented in the [multi-language guide](https://github.com/sgomezsal/nixos-vps/blob/main/docs/multilanguage.md).\nSee the [local quickstart](https://github.com/sgomezsal/nixos-vps/blob/main/examples/provider/README.md)\nfor runnable examples, prerequisites and the tested migration limits.\n\nThe original npm package nixos-vps remains a separate TypeScript interface.\nThis SDK delegates to the same component through the local provider process.\n\nLicensed under MIT.\n`;
   for(const directory of ['nodejs','python','go/nixosvps']) {
     fs.writeFileSync(path.join(output,directory,'README.md'),readme);
     fs.copyFileSync(path.join(__dirname,'../LICENSE'),path.join(output,directory,'LICENSE'));

@@ -1,0 +1,6 @@
+{
+  "resource": true,
+  "name": "nixos-vps",
+  "server": "github://api.github.com/sgomezsal/nixos-vps",
+  "version": "0.2.0-dev.0"
+}

@@ -62,6 +62,10 @@ exact prepared plugin and SDK files before writing `.provider-release/`. Outputs
 remain publication-disabled. See the [multi-language guide](../../docs/multilanguage.md)
 for package names, API conventions, artifact installation, locks and CI boundaries.
 
+Explicit release candidates and the separately approved distribution workflow
+are documented in the [publication guide](../../docs/provider-publication.md).
+The workspace stays private; only a candidate SDK tarball is publication-enabled.
+
 The integration suite uses temporary file state and loopback substitute providers.
 It must not load operator credentials or access Hetzner. Generated SDKs are test
 artifacts, not release packages. In particular, do not publish generated installation

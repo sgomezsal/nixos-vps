@@ -1,4 +1,4 @@
-// Prepare and verify preview artifacts only. This script never publishes.
+// Prepare previews or explicit publication candidates. This script never publishes.
 'use strict';
 const fs = require('node:fs');
 const path = require('node:path');
@@ -34,7 +34,7 @@ function writeManifest(directory, manifest) {
   fs.writeFileSync(path.join(directory, 'SHA256SUMS'), sums.sort().join('\n') + '\n');
 }
 
-function verify(directory, requireValidated = true) {
+function verify(directory, requireValidated = true, publication = false) {
   const location = path.resolve(directory);
   const manifestPath = path.join(location, 'manifest.json');
   if (!fs.lstatSync(location).isDirectory() || fs.lstatSync(location).isSymbolicLink()) {
@@ -47,7 +47,8 @@ function verify(directory, requireValidated = true) {
   const manifest = JSON.parse(fs.readFileSync(manifestPath));
   if (!manifest || typeof manifest !== 'object' || !manifest.artifacts || Array.isArray(manifest.artifacts) ||
       manifest.format !== 1 || manifest.version !== metadata.version || manifest.platform !== contract.platform ||
-      manifest.publishable !== false || (requireValidated && manifest.validation !== 'passed')) {
+      manifest.publishable !== publication || (requireValidated && (manifest.validation !== 'passed' ||
+        (publication && manifest.reproducible !== true)))) {
     throw Error('Artifact identity or validation status does not match this preview');
   }
   if (JSON.stringify(Object.keys(manifest.artifacts).sort()) !== JSON.stringify(Object.keys(names).sort())) {
@@ -76,11 +77,11 @@ function verify(directory, requireValidated = true) {
   return manifest;
 }
 
-function buildArtifacts(directory, working, env) {
+function buildArtifacts(directory, working, env, publication) {
   fs.mkdirSync(directory, {recursive: true}); fs.mkdirSync(working, {recursive: true});
   const sdk = path.join(working, 'sdk');
   // Generation also verifies the pinned CLI, versions and codegen templates.
-  generate(sdk, {env});
+  generate(sdk, {env, publication});
   if (require('typescript/package.json').version !== contract.tools.typescript) throw Error('TypeScript lock mismatch');
   // Compile outside the checkout with only declared dependencies, using its lock.
   const node = path.join(sdk, 'nodejs');
@@ -92,7 +93,7 @@ function buildArtifacts(directory, working, env) {
   run('npm', ['audit', '--audit-level=high'], {cwd: node, env});
   run(process.execPath, [path.join(node, 'node_modules/typescript/bin/tsc'), '-p', path.join(node, 'tsconfig.json')], {cwd: node, env});
   const [packed] = JSON.parse(run('npm', ['pack', '--ignore-scripts', '--json', '--pack-destination', directory], {cwd: node, env}));
-  if (packed.filename !== names.nodejs || sdkMetadata.name !== contract.npmPackage) throw Error('Node SDK identity mismatch');
+  if (packed.filename !== names.nodejs || sdkMetadata.name !== contract.npmPackage || sdkMetadata.private !== !publication) throw Error('Node SDK identity mismatch');
   if (sdkMetadata.dependencies['@pulumi/pulumi'] !== runtimeLock.packages[''].dependencies['@pulumi/pulumi']) {
     throw Error('SDK and plugin Pulumi versions differ');
   }
@@ -116,7 +117,7 @@ function buildArtifacts(directory, working, env) {
   const artifacts = Object.fromEntries(Object.entries(names).map(([role, filename]) => [role,
     {filename, sha256: sha256(path.join(directory, filename))}]));
   const manifest = {format: 1, version: metadata.version, platform: contract.platform,
-    publishable: false, validation: 'prepared', source: sourceIdentity(),
+    publishable: publication, validation: 'prepared', source: sourceIdentity(),
     tools: {...contract.tools, node: process.versions.node},
     nixpkgsRevision: JSON.parse(fs.readFileSync(path.join(root, 'flake.lock'))).nodes.nixpkgs.locked.rev,
     apiSha256: sha256(path.join(provider, 'schema.json')),
@@ -128,11 +129,11 @@ function buildArtifacts(directory, working, env) {
     goTag: `sdk/go/nixosvps/v${metadata.version}`,
     pluginReleaseTag: `v${metadata.version}`, artifacts};
   writeManifest(directory, manifest);
-  verify(directory, false);
+  verify(directory, false, publication);
   return manifest;
 }
 
-function prepare(destination) {
+function prepare(destination, {publication = false} = {}) {
   const output = path.resolve(destination);
   if (fs.existsSync(output)) throw Error('Output already exists; refusing overwrite');
   if (!fs.existsSync(path.dirname(output))) throw Error('Create the output parent directory first');
@@ -142,21 +143,23 @@ function prepare(destination) {
   try {
     const env = buildEnvironment(path.join(work, 'home'));
     run('npm', ['run', 'build'], {cwd: root, env});
-    const first = buildArtifacts(path.join(staging, 'artifacts'), path.join(work, 'first'), env);
-    const second = buildArtifacts(path.join(work, 'second-artifacts'), path.join(work, 'second'), env);
+    const first = buildArtifacts(path.join(staging, 'artifacts'), path.join(work, 'first'), env, publication);
+    if (publication) require('./provider-publish.cjs').verifyGoSource(path.join(staging, 'artifacts'), first);
+    const second = buildArtifacts(path.join(work, 'second-artifacts'), path.join(work, 'second'), env, publication);
     if (JSON.stringify(first.artifacts) !== JSON.stringify(second.artifacts)) {
       const mismatches = Object.keys(names).filter(role => first.artifacts[role].sha256 !== second.artifacts[role].sha256);
       throw Error('Reproducibility check failed: ' + mismatches.join(', '));
     }
     console.log('PROVIDER REPRODUCIBILITY PASS: all six artifacts match across separate build directories.');
     run(process.execPath, [path.join(root, 'scripts/test-component-provider.cjs')], {cwd: root,
-      env: {...env, PROVIDER_RELEASE_DIR: path.join(staging, 'artifacts')}, stdio: 'inherit'});
+      env: {...env, PROVIDER_RELEASE_DIR: path.join(staging, 'artifacts'),
+        PROVIDER_PUBLICATION_CANDIDATE: String(publication)}, stdio: 'inherit'});
     first.validation = 'passed'; first.reproducible = true;
     first.checks = ['two independent builds', 'prepared-artifact engine/SDK integration'];
     writeManifest(path.join(staging, 'artifacts'), first);
-    verify(path.join(staging, 'artifacts'));
+    verify(path.join(staging, 'artifacts'), true, publication);
     fs.renameSync(path.join(staging, 'artifacts'), output);
-    console.log(`PROVIDER PREVIEW VERIFIED: ${metadata.version}; reproducible plugin, npm, wheel, sdist and Go artifacts. Not published.`);
+    console.log(`PROVIDER ${publication ? 'CANDIDATE' : 'PREVIEW'} VERIFIED: ${metadata.version}; reproducible plugin, npm, wheel, sdist and Go artifacts. Not published.`);
   } finally {
     fs.rmSync(staging, {recursive: true, force: true}); fs.rmSync(work, {recursive: true, force: true});
   }
@@ -166,10 +169,15 @@ module.exports = {prepare, verify, writeManifest, sourceIdentity};
 if (require.main === module) {
   try {
     const [command, destination, ...extra] = process.argv.slice(2);
-    if (!destination || extra.length || !['prepare', 'verify'].includes(command)) {
-      throw Error('Usage: node scripts/provider-release.cjs prepare|verify /artifact/directory');
+    if (!destination || extra.length || !['prepare', 'candidate', 'verify', 'verify-candidate'].includes(command)) {
+      throw Error('Usage: node scripts/provider-release.cjs prepare|candidate|verify|verify-candidate /artifact/directory');
     }
     if (command === 'prepare') prepare(destination);
-    else { verify(destination); console.log('PROVIDER ARTIFACT INTEGRITY PASS. No deployment or publication performed.'); }
+    else if (command === 'candidate') prepare(destination, {publication: true});
+    else {
+      const manifest=verify(destination, true, command === 'verify-candidate');
+      if(command==='verify-candidate')require('./provider-publish.cjs').verifyGoSource(destination,manifest);
+      console.log('PROVIDER ARTIFACT INTEGRITY PASS. No deployment or publication performed.');
+    }
   } catch (error) { console.error(error.message); process.exitCode = 1; }
 }

@@ -139,6 +139,12 @@ There is no registry-install command for an unpublished SDK. The Node SDK remain
 
 ## Build and release boundaries
 
+The [publication guide](provider-publication.md) describes the separate
+`provider-release.yml` workflow, explicit publication candidates, protected
+environments, registry setup and retry behavior. Publication remains disabled
+until a maintainer enables it and approves a destination. The ordinary preview
+commands above still produce a private npm SDK.
+
 The plugin uses `runtime/package-lock.json` with `npm ci --ignore-scripts`; it does
 not resolve a fresh dependency graph during packaging. SDK build dependencies use
 `sdk-node-lock.json`, the checked-in Go module graph/checksums and the Python build
@@ -163,9 +169,10 @@ claimed until these changes have been committed, pushed and checked by GitHub.
 Future distribution uses the schema's explicit
 `github://api.github.com/sgomezsal/nixos-vps` plugin URL and Pulumi's standard
 archive filename. The planned plugin release tag is `v0.2.0-dev.0`. A published
-Go module would also need generated source committed under `sdk/go/nixosvps`
-and the separate submodule tag `sdk/go/nixosvps/v0.2.0-dev.0`; the prepared source
-archive does not create either tag. SDK publication, registry trust and enabling
+Go module uses generated source under `sdk/go/nixosvps`
+and the separate submodule tag `sdk/go/nixosvps/v0.2.0-dev.0`. Candidate preparation
+checks the source against its archive; preparation never creates either release
+tag. SDK publication, registry trust and enabling
 the publishable metadata require a separate release review. See the official
 [plugin distribution documentation](https://www.pulumi.com/docs/iac/guides/building-extending/packages/executable-plugin/).
 
