@@ -3,7 +3,7 @@
 Choose one language and a new directory. These examples exercise local preview
 artifacts for the experimental `0.2.0-dev.0` provider. For the published SDKs,
 use the [registry installation commands](../../docs/multilanguage.md#install-the-published-prerelease).
-This guide does not replace the stable package quickstart.
+This guide does not replace the original package quickstart.
 Installation on a real server formats its disk. None of the setup or validation
 commands below creates a server.
 

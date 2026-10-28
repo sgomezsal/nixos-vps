@@ -20,7 +20,7 @@ const patterns = [
   /\bAGE-SECRET-KEY-1[0-9A-Z]{20,}/,
   /\b(?:ghp_|github_pat_)[A-Za-z0-9_]{30,}/,
   /\bsk-proj-[A-Za-z0-9_-]{30,}/,
-  /HCLOUD_TOKEN\s*[:=]\s*["']?[a-fA-F0-9]{64}\b/,
+  /HCLOUD_TOKEN\s*[:=]\s*["']?[A-Za-z0-9]{64}\b/,
 ];
 const findings = [];
 let checked = 0;

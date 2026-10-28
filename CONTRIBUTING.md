@@ -17,12 +17,12 @@ npm test
 `npm test` runs the component and CLI tests, then installs the package tarball in
 an independent consumer project to check its imports, declarations and templates.
 
-For the unreleased component provider, use `nix develop .#provider` and run
+For the experimental component provider, use `nix develop .#provider` and run
 `npm run test:provider` after building. This adds Python and Go and exercises
 generated SDKs through a locally installed plugin. The full suite includes this
 test. Keep the provider workspace private. The existing `release.yml` workflow
 publishes only the original TypeScript package. The separate, manually gated
-`provider-release.yml` workflow prepares the multi-language prerelease; see
+`provider-release.yml` workflow prepares and publishes reviewed multi-language candidates; see
 [provider publication](docs/provider-publication.md) before using a publishing target.
 
 The CI `provider-artifacts` job depends on full validation, then runs

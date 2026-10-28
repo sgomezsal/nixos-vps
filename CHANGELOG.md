@@ -1,6 +1,15 @@
 # Changelog
 
-## Unreleased — component provider development
+## Unreleased
+
+- Add independent public-distribution smoke tests and supply the C++ runtime
+  needed by Python gRPC wheels in the provider development shell on NixOS.
+- Verify protected consumer migration with remote-compatible transforms and a
+  saved local-preflight plan before the full preview. Live migration is pending.
+- Detect opaque alphanumeric Hetzner token assignments in credential scans, with
+  regression coverage for detection, safe output and example placeholders.
+
+## 0.2.0-dev.0 — 2026-10-28
 
 - Add a private component-provider workspace delegating to `nixos-vps@0.1.2`,
   preserving the resource token and child-resource names.
@@ -8,7 +17,7 @@
   development-plugin packaging with an explicit file allowlist.
 - Add engine tests for SDK interoperability, persisted-state migration,
   secrets, lifecycle operations and partial-failure recovery using substitute
-  cloud providers. No live stack migration or SDK publication is included.
+  cloud providers. No live stack migration is included.
 - Add a provider development shell; keep the published package and its runtime
   unchanged.
 - Fix SDK distribution names and the initial API baseline. Pin plugin and SDK
@@ -16,6 +25,12 @@
 - Prepare reproducible plugin/npm/Python/Go artifacts, verify two independent
   builds and exercise the exact artifacts through offline consumers. Add a
   read-only CI artifact job without publishing or deploying.
+- Publish the plugin and Go module through GitHub, the scoped npm SDK
+  `@sgomezsal/nixos-vps`, and the Python distribution `pulumi-nixos-vps`.
+  Public downloads match the reviewed candidate. PyPI publication uses OIDC
+  and attestations; the npm bootstrap used interactive authentication.
+- Add separately gated publication jobs and verify registry processing,
+  checksums, source identity and safe retry behavior.
 
 ## 0.1.2 — 2026-10-27
 

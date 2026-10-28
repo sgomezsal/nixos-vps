@@ -75,7 +75,7 @@ after success or failure and preserves unrelated neighboring files.
 
 [Validation coverage](validation.md) describes the checks and their limits.
 
-## Component provider (unreleased)
+## Experimental component provider
 
 The private `packages/nixos-vps-provider` workspace implements Pulumi's Construct
 RPC around the published `nixos-vps@0.1.2` component. A checked-in schema generates
@@ -93,14 +93,20 @@ not SDK arguments.
 Engine tests exercise conversion of an ordinary persisted TypeScript graph to
 the remote SDKs. Moving the runner into the plugin changes its absolute paths;
 the initial migration updates local preflight/update commands without running
-installation again or changing cloud resources. Legacy callbacks and direct child-resource access are outside
-that compatibility guarantee. No live stack has been migrated to this provider.
+installation again or changing cloud resources. Legacy callbacks do not cross the
+provider boundary; remote-compatible `transforms` and protected migration plans
+are covered in the [migration limits](multilanguage.md#migration-limits). Direct
+child-resource access is outside that compatibility guarantee. No live stack has
+been migrated to this provider.
 
 The provider preview pipeline installs its locked runtime, generates the SDKs
 with a pinned CLI and packages their public entry points. Two builds from separate
 directories must have identical artifact hashes. Exact-artifact consumer tests
-then run before atomic output creation. CI can upload those preview files but
-cannot publish them. See [multi-language distribution](multilanguage.md).
+then run before atomic output creation. Ordinary CI uploads private preview
+artifacts. A separate manually gated workflow publishes reviewed candidates; the
+`0.2.0-dev.0` plugin and SDKs are available from public distribution. See
+[multi-language distribution](multilanguage.md) and
+[publication controls](provider-publication.md).
 
 ## Flakes and shared source
 

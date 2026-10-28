@@ -8,8 +8,8 @@ and installer integrity before creating cloud resources, then installs NixOS ove
 SSH. The IPv4 output resolves after installation and SSH readiness checks complete.
 
 > [!NOTE]
-> **Experimental / pre-release.** Local validation passes: 53 package tests,
-> four VM installation checks, NixOS builds and independent tarball-consumer tests.
+> **Experimental / pre-release.** Local validation covers package and provider tests,
+> four VM installation checks, NixOS builds and independent tarball consumers.
 > One live CX23 installation passed with the disk-inventory fix included in
 > version `0.1.2`. The live test also verified SSH identity across kexec,
 > public HTTP readiness, normal reboots, a routine NixOS configuration update
@@ -86,7 +86,7 @@ installation requirements and troubleshooting instructions.
 
 The [experimental component provider](packages/nixos-vps-provider/README.md)
 has a published `0.2.0-dev.0` prerelease with TypeScript, Python and Go SDKs.
-It is separate from the stable `nixos-vps@0.1.2` package. See the
+It is separate from the existing `nixos-vps@0.1.2` package. See the
 [multi-language guide](docs/multilanguage.md) for exact installation commands,
 platform requirements and migration limits.
 

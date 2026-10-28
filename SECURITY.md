@@ -82,3 +82,9 @@ Other provider configurations, package/kernel upgrades and recovery
 after kexec or formatting remain unverified. This is not a comprehensive security
 audit. See
 [validation coverage](docs/validation.md).
+
+Those live results cover the original TypeScript component. The experimental
+multi-language provider has passed local engine and public distribution checks,
+but no live stack migration or fresh installation through that provider has
+been verified. Keep resource protection enabled during migration; an uncertain
+preview is not evidence that a replacement is safe.

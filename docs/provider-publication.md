@@ -1,7 +1,9 @@
 # Multi-language prerelease publication
 
-The provider and its SDKs are not published yet. `nixos-vps@0.1.2` is a separate,
-already published TypeScript component and is unchanged by this process.
+The experimental `0.2.0-dev.0` provider and its SDKs are published. See
+[installation](multilanguage.md#install-the-published-prerelease) and
+[verified distribution](validation.md#multi-language-prerelease-distribution).
+`nixos-vps@0.1.2` is a separate TypeScript component and remains unchanged.
 
 ## Prepare without publishing
 
@@ -90,8 +92,8 @@ and environment `npm`. That relationship is configured for the scoped package
 with publishing permission; an actual npm OIDC upload remains untested.
 
 For a package that does not yet exist, its first authenticated publication is a
-separate maintainer-authorized bootstrap step; do not upload a placeholder or publish the original `nixos-vps`
-package instead. Use the validated candidate tarball with public access and the
+separate maintainer-authorized bootstrap step. Do not upload a placeholder or
+publish the original `nixos-vps` package instead. Use the validated candidate tarball with public access and the
 `next` tag. Afterwards configure OIDC and restrict token-based publishing.
 See [npm trusted publishing](https://docs.npmjs.com/trusted-publishers/).
 
@@ -102,6 +104,11 @@ The initial npm upload used interactive authentication; npm OIDC remains unteste
 Keep the publication gate disabled until prerequisites and candidate review are complete.
 
 ## Future publication order
+
+For a new, explicitly authorized release, first choose an unused version and
+update the provider metadata, generated SDKs and their version assertions. The
+versions below describe the first prerelease; do not republish it. Keep the
+source commit fixed across all destinations.
 
 After explicit release authorization:
 

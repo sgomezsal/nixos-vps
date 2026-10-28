@@ -1,9 +1,43 @@
 # Validation coverage
 
-Release-candidate full CI run: **2026-10-27 UTC**, commit `4314d61`. All
+The core `0.1.2` release-candidate CI ran on **2026-10-27 UTC**, commit
+`4314d61`. All
 **53 package tests passed**, with
 no failures or skipped tests. npm audit and credential scans reported no findings
 in that run.
+
+The published multi-language prerelease and protected migration checks are
+recorded under [distribution evidence](#multi-language-prerelease-distribution).
+Earlier development runs below are historical evidence, not current release status.
+
+## Latest offline review — 2026-10-28
+
+The complete `./scripts/validate.sh` run exited zero: build/type checks, package
+consumption, SOPS, read-only CLI validation, SSH identity/policy, Pulumi lifecycle,
+provider interoperability, protected migration, workflow syntax and template
+parity passed. Nix system/VM checks reused successful store outputs; this was not
+a fresh VM execution. The suite ran 53 core and 19 provider unit tests without
+failures or skips. A separate rerun of all core tests after adding the credential
+scanner regression passed **54 tests**, also with no failures or skips.
+
+The scanner now detects opaque alphanumeric as well as hexadecimal Hetzner token
+assignments. Its regression verifies detection without printing token values and
+accepts the documented placeholder. The repository scan checked **117 files with
+zero findings**; npm audit reported **zero vulnerabilities**. These checks are
+bounded signature/dependency checks, not a comprehensive security audit.
+
+`npm run test:provider:public` passed independent plugin, npm, Python and Go
+installations. A separate read-only registry verification downloaded the npm
+tarball and Python distributions and matched their SHA-256 values against the
+original published candidate. All 43 local documentation file links resolved.
+The inspected tracked files contained no references to the private repository,
+private consumer directory or the known test-server IP/identifier.
+
+No Hetzner account, VPS, cloud operation or registry publication was used during
+this review. Remaining integration work is the
+[live migration plan](multilanguage.md#next-live-validation), followed by its
+reviewed application and language-switch checks. A fresh installation through
+the new provider and its first npm OIDC upload remain separate unverified paths.
 
 ## What is tested
 
@@ -18,7 +52,7 @@ in that run.
 | Release | Artifact identity, pending processing, integrity failures, fail-fast preparation and manual OIDC workflow guards | `npm test` |
 | Secrets | Operator-only SOPS injection with test credentials | `npm run test:secrets` |
 | Distribution and CI | Provisioning scope, pinned actions and workflow syntax | `scripts/test-publication.cjs` and package tests |
-| Component provider (unreleased) | Installed local plugin, generated TypeScript/Python/Go SDKs, persisted-state interoperability and failure recovery | `npm run test:provider` |
+| Experimental component provider | Installed local plugin, generated TypeScript/Python/Go SDKs, persisted-state interoperability and failure recovery | `npm run test:provider` |
 
 Run `./scripts/validate.sh` for the full suite. It supplies the additional tools
 needed by the scripts above. The suite uses temporary local state, test identities
@@ -41,7 +75,7 @@ For the effective SSH policy test, `sshd -T` reads the generated configuration w
 only its host-key paths replaced by disposable test identities. Its authentication
 directives remain unchanged.
 
-## Unreleased component provider
+## Initial component-provider development (historical)
 
 The local development working tree passed `./scripts/validate.sh` on
 2026-10-27. The 53 existing package tests and ten provider tests passed, with
@@ -164,7 +198,7 @@ These checks do not constitute a new full VM-suite run.
 The initializer/validator still uses a TypeScript bootstrap for Python and Go.
 Its Nix checks target the generated `nixos/` directory and `web` host; they do not
 validate arbitrary alternative targets or replace language-specific checks.
-The remote SDKs remain unpublished. No Hetzner account, live consumer, cloud
+At the time of that check the remote SDKs were unpublished. No Hetzner account, live consumer, cloud
 resource or package registry publication was used in this check.
 
 ### Publication preparation
@@ -322,7 +356,7 @@ separately.
 ## Multi-language prerelease distribution
 
 The published experimental provider is built from commit
-`5a217d3d74220dbc1b1338088cea8c4b9eb925ca`. The stable unscoped
+`5a217d3d74220dbc1b1338088cea8c4b9eb925ca`. The existing unscoped
 `nixos-vps@0.1.2` package and its `latest`/`next` tags were unchanged.
 
 Executed evidence:

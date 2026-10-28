@@ -1,7 +1,7 @@
 # Multi-language provider prerelease
 
 The component provider has a published experimental `0.2.0-dev.0` prerelease.
-The stable npm package
+The existing npm package
 `nixos-vps@0.1.2` remains unchanged. These SDKs call the same implementation
 through a local Node.js provider; Python and Go do not replace the installer.
 
@@ -231,3 +231,30 @@ approved procedure for an arbitrary live stack. A real plan still needs review;
 stop on any cloud create, replacement, deletion or setting change.
 
 The provider workflow neither accesses a live project nor creates a VPS.
+
+## Next live validation
+
+The next integration check is migration of an existing disposable test server,
+not a fresh installation. Complete these steps in its independent consumer
+project, keeping operational files and state outside this repository:
+
+1. Require successful CI for the source under review. Back up the consumer,
+   lockfile and encrypted Pulumi state; retain the existing keys and flake.
+2. Change only the TypeScript SDK import and the remote-compatible resource
+   policy. Keep the stack, logical names, provider versions, physical server
+   identity, machine type, location and protection unchanged.
+3. Review a saved plan targeting only the existing local preflight. It must not
+   create, update, replace or delete cloud resources. Apply only that reviewed
+   plan, then generate a new full preview.
+4. Require the full plan to preserve every cloud resource. Only the expected
+   non-destructive local command update is acceptable. Stop on unknown cloud
+   changes, replacements or installation creation; do not disable protection.
+5. Apply that reviewed plan, check the original server ID, pinned SSH identity,
+   system readiness and HTTP, and require an unchanged repeat preview.
+6. Evaluate equivalent Python and Go consumers against the same state. Each
+   language switch must leave the infrastructure unchanged.
+
+Record actual results before expanding the validation claim. Reusing an installed
+server cannot establish that the new provider's initial installation works on a
+fresh VPS. That remains a separate test requiring an explicit cost and resource
+decision. Do not create another server as an automatic migration fallback.
