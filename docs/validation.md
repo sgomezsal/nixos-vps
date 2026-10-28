@@ -362,8 +362,32 @@ cloud resources, connect to a VPS or load operator credentials. It tests exact
 versions, not mutable registry tags. Full Pulumi engine behavior is covered by the
 separate loopback provider suite; these public smoke tests do not replace it.
 
-The GitHub publication gate was reset to `false`. Future npm automation requires
-the scoped package's trusted publisher to be configured and exercised; the first
-manual npm publication does not establish that trust. No Hetzner account or
+The GitHub publication gate was reset to `false`. npm subsequently confirmed
+creation of the scoped package's GitHub trusted publisher for
+`sgomezsal/nixos-vps`, `provider-release.yml`, environment `npm`, with publishing
+permission. Configuration is verified by npm's successful creation response;
+an actual npm OIDC upload has not yet been exercised. The first manual npm
+publication does not test that upload path. No Hetzner account or
 server was accessed during this distribution check. The new provider and SDKs
 still require a separately authorized live deployment/migration test.
+
+### Protected consumer migration
+
+The engine suite also exercises a consumer with a fixed physical server name,
+backups disabled, inherited protection, a single-server limit and a `cx23` budget
+guard. Its legacy callback is replaced by a remote-compatible `transforms`
+callback. All operations use disposable state and loopback substitute providers.
+
+The initial full preview fails safely: changed preflight runner paths make SSH
+key outputs unknown, and protection blocks speculative replacement proposals.
+A saved plan targeting only the existing local preflight resolves those outputs;
+the subsequent full preview passes. The resulting migration retains the server
+URN/ID and every decrypted server input, including secret labels, without any
+cloud-resource create/update/delete or another installation. A repeated update
+has no changes, protected deletion fails, and duplicate-server and budget-guard
+previews fail without CRUD. The complete `npm run test:provider` suite exited zero.
+
+This establishes a local migration strategy, not permission to apply an uncertain
+live plan. The real target-only plan must be reviewed independently and must not
+include cloud operations. Keep protection enabled and stop if the subsequent
+full plan proposes cloud changes. No live stack was migrated by this test.

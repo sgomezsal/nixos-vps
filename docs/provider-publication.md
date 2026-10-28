@@ -84,11 +84,13 @@ publishes nor reserves the name. PyPI authentication is OIDC; no PyPI API token
 is stored in GitHub. See [PyPI trusted publishing](https://docs.pypi.org/trusted-publishers/creating-a-project-through-oidc/).
 
 An npm login as `sgomezsal` provides access to the personal scope, but is not a
-trusted-publisher configuration for `@sgomezsal/nixos-vps`. Before the automated
-`npm` target can upload, configure that package's trusted publisher for this
-repository, `provider-release.yml` and environment `npm`. If the package does not
-exist, its first authenticated publication is a separate maintainer-authorized
-bootstrap step; do not upload a placeholder or publish the original `nixos-vps`
+trusted-publisher configuration for `@sgomezsal/nixos-vps`. The automated `npm`
+target requires a trusted publisher for this repository, `provider-release.yml`
+and environment `npm`. That relationship is configured for the scoped package
+with publishing permission; an actual npm OIDC upload remains untested.
+
+For a package that does not yet exist, its first authenticated publication is a
+separate maintainer-authorized bootstrap step; do not upload a placeholder or publish the original `nixos-vps`
 package instead. Use the validated candidate tarball with public access and the
 `next` tag. Afterwards configure OIDC and restrict token-based publishing.
 See [npm trusted publishing](https://docs.npmjs.com/trusted-publishers/).

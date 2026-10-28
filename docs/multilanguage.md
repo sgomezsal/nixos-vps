@@ -215,7 +215,19 @@ updates absolute local runner paths, executing preflight and the non-destructive
 installation update command. It does not reinstall NixOS or change cloud resources
 in those tests. Later unchanged deployments and switches to Python/Go are no-ops.
 
-No live stack has been migrated. JavaScript callback transformations and direct
-access to child resources are outside this contract. The existing live consumer
-has customizations that need an explicit migration review before any cloud
-operation. The provider workflow neither accesses that project nor creates a VPS.
+No live stack has been migrated. Legacy JavaScript `transformations` callbacks
+do not cross the remote component boundary. Use Pulumi's newer `transforms`
+option for such policies and test the exact consumer before migration. Direct
+access to child resources is outside this contract.
+
+A protected consumer can initially receive speculative replacement proposals:
+changed local runner paths make preflight outputs unknown during preview. Do not
+remove protection or apply the full plan to resolve that uncertainty. The engine
+regression exercises a saved plan targeting only the existing local preflight,
+then repeats the full preview after those outputs are known. It preserves the
+physical server name, disabled backups, protection and single-server/budget
+policies in the substitute-provider fixture. This is offline evidence, not an
+approved procedure for an arbitrary live stack. A real plan still needs review;
+stop on any cloud create, replacement, deletion or setting change.
+
+The provider workflow neither accesses a live project nor creates a VPS.

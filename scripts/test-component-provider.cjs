@@ -56,7 +56,20 @@ const {NixosServer}=${mode==='legacy'?'require('+JSON.stringify(module)+')':'req
 const parent=new p.ComponentResource('fixture:index:Parent','group',{});
 const a={flakeDirectory:process.cwd()+'/flake',configuration:c.configuration||'web',installer:'/unexecuted#secure',sshPublicKeyPath:'/unexecuted.pub',sshPrivateKeyPath:'/unexecuted',sshHostKeyPrivatePath:process.cwd()+'/host',serverType:p.output(c.serverType||'cpx22'),location:c.location||'nbg1',tcpPorts:c.ports||[80],labels:p.secret({purpose:'synthetic-secret-label-value'})};
 if(c.sources!==undefined)a.sshSourceIps=p.output(c.sources);
-const s=new NixosServer('web',a,{parent,protect:c.protect||false});exports.ipv4=s.ipv4;exports.serverId=s.serverId;`);
+let declarations=0;
+const policy=args=>{
+ if(args.type!=='hcloud:index/server:Server')return undefined;
+ if(++declarations!==1)throw Error('Only one VPS is authorized for this fixture');
+ return {props:{...args.props,name:'fixture-vps',backups:false},opts:{...args.opts,protect:true}};
+};
+const options={parent,protect:c.protect||c.customPolicy||false};
+if(c.customPolicy){
+ if(a.serverType && c.serverType!=='cx23')throw Error('This fixture permits only cx23');
+ options[${JSON.stringify(mode==='legacy'?'transformations':'transforms')}]=[policy];
+}
+const s=new NixosServer('web',a,options);
+if(c.duplicate)new NixosServer('duplicate',a,options);
+exports.ipv4=s.ipv4;exports.serverId=s.serverId;`);
 }
 (async()=>{
   try {
@@ -205,6 +218,57 @@ const s=new NixosServer('web',a,{parent,protect:c.protect||false});exports.ipv4=
       assert.match(cli(['preview'],true),/flakeDirectory/);
       assert.equal(state().events.length,missing,'Missing required user config performed CRUD');
     }
+    // Reproduce consumer policies that legacy callbacks cannot forward through RPC.
+    metadata.main='index.js';
+    fs.writeFileSync(path.join(temporary,'package.json'),JSON.stringify(metadata));
+    env.PULUMI_NODEJS_TYPESCRIPT='false';project('nodejs');
+    cli(['stack','init','policy-migration']);
+    config({customPolicy:true,serverType:'cx23'});writeNode('legacy');up();
+    const policyResources=JSON.parse(cli(['stack','export'])).deployment.resources;
+    const policyServer=policyResources.find(r=>r.type==='hcloud:index/server:Server');
+    const policyPlainInputs=JSON.parse(cli(['stack','export','--show-secrets'])).deployment.resources.find(r=>r.type===policyServer.type).inputs;
+    assert.equal(policyServer.inputs.name,'fixture-vps');
+    assert.equal(policyServer.inputs.backups,false);assert.equal(policyServer.protect,true);
+    const beforePolicy=state().events.length,policyInstalls=state().installs;
+    writeNode('remote');
+    // Changed runner paths make preflight outputs unknown during preview. The
+    // engine must block speculative replacements of protected resources.
+    const policyPreview=cli(['preview'],true);
+    assert.match(policyPreview,/marked for protection/);
+    assert.match(policyPreview,/publicKey|sshKeys/);
+    assert.equal(state().events.length,beforePolicy,'Policy preview performed CRUD');
+    // Resolve just the local preflight before asking for a full migration plan.
+    // Never use an unreviewed full update to resolve protected cloud inputs.
+    const preflightUrn=policyResources.find(r=>r.type==='command:local:Command'&&r.urn.endsWith('::web-preflight')).urn;
+    const preflightPlan=path.join(temporary,'policy-preflight-plan.json');
+    cli(['preview','--target',preflightUrn,'--save-plan',preflightPlan]);
+    cli(['up','--yes','--skip-preview','--target',preflightUrn,'--plan',preflightPlan]);
+    assert.ok(state().events.slice(beforePolicy).every(event=>event.op==='update'&&event.urn===preflightUrn),
+      'Targeted preflight changed another resource');
+    cli(['preview']);
+    up();assertReady();
+    assert.ok(state().events.slice(beforePolicy).every(event=>event.op==='update'&&/::web-(preflight|install)$/.test(event.urn)),
+      'Policy migration changed cloud resources');
+    assert.equal(state().installs,policyInstalls,'Policy migration reinstalled the server');
+    const remotePolicyServer=JSON.parse(cli(['stack','export'])).deployment.resources.find(r=>r.type===policyServer.type);
+    assert.equal(remotePolicyServer.id,policyServer.id);assert.equal(remotePolicyServer.urn,policyServer.urn);
+    // State exports re-encrypt secrets, so compare values rather than ciphertext.
+    const remotePlainInputs=JSON.parse(cli(['stack','export','--show-secrets'])).deployment.resources.find(r=>r.type===policyServer.type).inputs;
+    assert.deepEqual(remotePlainInputs,policyPlainInputs);assert.equal(remotePolicyServer.protect,true);
+    assert.ok(!cli(['stack','export']).includes('synthetic-secret-label-value'),'Policy migration lost secret propagation');
+    const settledPolicy=state().events.length;
+    up();assert.equal(state().events.length,settledPolicy,'Policy migration was not idempotent');
+    cli(['destroy','--yes','--skip-preview'],true);
+    assert.equal(state().events.length,settledPolicy,'Protected policy stack performed deletion');
+    config({customPolicy:true,serverType:'cx23',duplicate:true});
+    assert.match(cli(['preview'],true),/Only one VPS is authorized/);
+    assert.equal(state().events.length,settledPolicy,'Duplicate preview performed CRUD');
+    config({customPolicy:true,serverType:'cpx22'});
+    assert.match(cli(['preview'],true),/permits only cx23/);
+    assert.equal(state().events.length,settledPolicy,'Budget guard performed CRUD');
+    cli(['state','unprotect','--all','--yes']);cli(['destroy','--yes','--skip-preview']);
+    assert.equal(Object.keys(state().objects).length,0);
+    console.log('POLICY MIGRATION PASS: protected preview blocks unknown-output replacements; a saved targeted local-preflight plan resolves them before full preview; physical name, backups, protection, server ID and inputs retained without reinstall/cloud changes; duplicate and budget guards reject before CRUD.');
     console.log('COMPONENT PROVIDER PASS: independently packaged/installed plugin; real Construct RPC; unchanged TypeScript→remote→Python→Go resource IDs/URNs; migration only updates local runner paths without reinstalling; secret propagation, outputs, preview, updates, protection, replacement, deletion and partial-failure retry. Cloud providers were loopback substitutes.');
   } finally {
     for(const child of children)child.kill();
