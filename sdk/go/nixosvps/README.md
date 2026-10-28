@@ -1,6 +1,6 @@
 # nixos-vps
 
-Experimental Pulumi component SDK (0.2.0-dev.0).
+Experimental Pulumi component SDK (0.2.0-dev.1).
 
 Creates a new Hetzner server, firewall and SSH key registration, then installs
 NixOS using the shared nixos-vps installer. Installation formats the target disk.

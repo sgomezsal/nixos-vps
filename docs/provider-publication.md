@@ -5,6 +5,14 @@ The experimental `0.2.0-dev.0` provider and its SDKs are published. See
 [verified distribution](validation.md#multi-language-prerelease-distribution).
 `nixos-vps@0.1.2` is a separate TypeScript component and remains unchanged.
 
+## Next candidate
+
+`0.2.0-dev.1` is being prepared to validate the configured npm trusted publisher
+through a real GitHub Actions OIDC upload. Its matching plugin and SDK artifacts
+use the same source commit; publication and provenance are not verified yet.
+The installer still delegates to `nixos-vps@0.1.2`. This release does not create,
+replace or update a Hetzner server.
+
 ## Prepare without publishing
 
 Use x86_64 Linux and the locked provider shell:

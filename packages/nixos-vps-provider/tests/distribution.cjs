@@ -21,7 +21,7 @@ test('the initial multi-language API and distribution names cannot drift silentl
   assert.equal(contract.pythonDistribution,'pulumi-nixos-vps');
   assert.equal(require('../../nixos-vps/package.json').name,'nixos-vps');
   const names=artifactNames(metadata.version);
-  assert.equal(names.plugin,'pulumi-resource-nixos-vps-v0.2.0-dev.0-linux-amd64.tar.gz');
+  assert.equal(names.plugin,'pulumi-resource-nixos-vps-v0.2.0-dev.1-linux-amd64.tar.gz');
   assert.throws(()=>artifactNames('../malicious'),/Unsupported/);
 });
 

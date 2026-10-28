@@ -4,7 +4,7 @@ const fs=require('node:fs'),path=require('node:path'),os=require('node:os'),cryp
 const {guardIdentity,registryState,requirePlugin,publishGitHub,preflight,verifyGoSource,verifyRegistry}=require('../../../scripts/provider-publish.cjs');
 const {verify,writeManifest}=require('../../../scripts/provider-release.cjs');
 const {artifactNames,sha256,archive,buildEnvironment}=require('../scripts/distribution.cjs');
-const root=path.resolve(__dirname,'../../..'),version='0.2.0-dev.0',commit='a'.repeat(40),hash='b'.repeat(64);
+const root=path.resolve(__dirname,'../../..'),version='0.2.0-dev.1',commit='a'.repeat(40),hash='b'.repeat(64);
 const digest=bytes=>crypto.createHash('sha256').update(bytes).digest('hex');
 function context(target='github'){return {PROVIDER_RELEASE_TARGET:target,PROVIDER_RELEASE_ENABLED:'true',GITHUB_ACTIONS:'true',GITHUB_REPOSITORY:'sgomezsal/nixos-vps',GITHUB_EVENT_NAME:'workflow_dispatch',GITHUB_REF:'refs/heads/main',GITHUB_WORKFLOW_REF:'sgomezsal/nixos-vps/.github/workflows/provider-release.yml@refs/heads/main',GITHUB_SHA:commit};}
 function manifest(){return {version,publishable:true,validation:'passed',reproducible:true,source:{commit,sha256:hash,dirty:false},pluginReleaseTag:'v'+version,goTag:'sdk/go/nixosvps/v'+version,
@@ -60,7 +60,7 @@ test('npm distinguishes absent, staging and complete versions and rejects downlo
 
 test('PyPI partial uploads verify existing bytes and identify only missing distributions',async()=>{
  const m=manifest(),wheel=m.artifacts.pythonWheel;
- const metadata={info:{name:'pulumi-nixos-vps',version:'0.2.0.dev0'},urls:[{filename:wheel.filename,digests:{sha256:wheel.sha256},url:'https://files.pythonhosted.org/wheel'}]};
+ const metadata={info:{name:'pulumi-nixos-vps',version:'0.2.0.dev1'},urls:[{filename:wheel.filename,digests:{sha256:wheel.sha256},url:'https://files.pythonhosted.org/wheel'}]};
  const fetcher=async url=>url==='https://files.pythonhosted.org/wheel'?new Response('pythonWheel'):json(metadata);
  assert.deepEqual(await registryState(m,'pypi',fetcher),{state:'partial',missing:['pythonSource']});
  metadata.urls[0].digests.sha256='0'.repeat(64);await assert.rejects(()=>registryState(m,'pypi',fetcher),/integrity/);
@@ -114,7 +114,7 @@ test('registry preflight requires a public matching plugin and never stages conf
  const wheel=m.artifacts.pythonWheel;
  fs.writeFileSync(path.join(directory,m.artifacts.pythonSource.filename),'pythonSource');
  const api=async endpoint=>endpoint.startsWith('git/ref/')?{object:{type:'commit',sha:commit}}:{draft:false,prerelease:true,assets:[{name:m.artifacts.plugin.filename,digest:'sha256:'+m.artifacts.plugin.sha256}]};
- const fetcher=async url=>url.startsWith('https://files.pythonhosted.org/')?new Response('pythonWheel'):json({info:{name:'pulumi-nixos-vps',version:'0.2.0.dev0'},urls:[{filename:wheel.filename,digests:{sha256:wheel.sha256},url:'https://files.pythonhosted.org/wheel'}]});
+ const fetcher=async url=>url.startsWith('https://files.pythonhosted.org/')?new Response('pythonWheel'):json({info:{name:'pulumi-nixos-vps',version:'0.2.0.dev1'},urls:[{filename:wheel.filename,digests:{sha256:wheel.sha256},url:'https://files.pythonhosted.org/wheel'}]});
  await assert.rejects(()=>requirePlugin(m,async()=>null),/matching GitHub/);
  await preflight(directory,'pypi',{api,fetcher,validate:()=>m,env:{GITHUB_OUTPUT:output},uploadDirectory});
  assert.deepEqual(fs.readdirSync(uploadDirectory),[m.artifacts.pythonSource.filename]);assert.equal(fs.readFileSync(output,'utf8'),'exists=false\n');

@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.2.0-dev.1 — 2026-10-28
 
 - Add independent public-distribution smoke tests and supply the C++ runtime
   needed by Python gRPC wheels in the provider development shell on NixOS.
@@ -15,6 +15,10 @@
   Fresh installation through the provider remains unverified.
 - Detect opaque alphanumeric Hetzner token assignments in credential scans, with
   regression coverage for detection, safe output and example placeholders.
+
+This prerelease is prepared to exercise the configured npm OIDC publisher.
+Publication and provenance verification are pending. Fresh provider installation
+on Hetzner remains unverified.
 
 ## 0.2.0-dev.0 — 2026-10-28
 
