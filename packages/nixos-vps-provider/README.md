@@ -1,7 +1,7 @@
 # nixos-vps component provider
 
 **Private development workspace for an experimental provider.** The
-`0.2.0-dev.0` plugin and generated language SDKs are published separately.
+`0.2.0-dev.1` plugin and generated language SDKs are published separately.
 Existing consumers of `nixos-vps@0.1.2` do not install this workspace. See the
 [multi-language guide](../../docs/multilanguage.md) for public installation.
 

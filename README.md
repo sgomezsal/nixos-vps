@@ -85,7 +85,7 @@ installation requirements and troubleshooting instructions.
 ## Development
 
 The [experimental component provider](packages/nixos-vps-provider/README.md)
-has a published `0.2.0-dev.0` prerelease with TypeScript, Python and Go SDKs.
+has a published `0.2.0-dev.1` prerelease with TypeScript, Python and Go SDKs.
 It is separate from the existing `nixos-vps@0.1.2` package. See the
 [multi-language guide](docs/multilanguage.md) for exact installation commands,
 platform requirements and migration limits. An existing test VPS passed migration

@@ -16,9 +16,15 @@
 - Detect opaque alphanumeric Hetzner token assignments in credential scans, with
   regression coverage for detection, safe output and example placeholders.
 
-This prerelease is prepared to exercise the configured npm OIDC publisher.
-Publication and provenance verification are pending. Fresh provider installation
-on Hetzner remains unverified.
+- Publish matching plugin and TypeScript/Python/Go SDKs from one reviewed commit.
+  Verify the first scoped npm OIDC upload, SLSA provenance and independent npm
+  signature/attestation audit. PyPI uses OIDC with attestations.
+- Verify public artifact hashes and independent consumers. npm processing exceeded
+  the first verification window; a verification-only retry passed without
+  republishing. Keep scoped `next` on this version and leave `latest` unchanged.
+
+Fresh provider installation on Hetzner remains unverified. This release did not
+access Hetzner or modify the live test VPS.
 
 ## 0.2.0-dev.0 — 2026-10-28
 

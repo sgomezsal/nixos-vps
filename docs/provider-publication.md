@@ -1,17 +1,18 @@
 # Multi-language prerelease publication
 
-The experimental `0.2.0-dev.0` provider and its SDKs are published. See
+The experimental `0.2.0-dev.1` provider and its SDKs are published. See
 [installation](multilanguage.md#install-the-published-prerelease) and
-[verified distribution](validation.md#multi-language-prerelease-distribution).
+[verified OIDC distribution](validation.md#npm-oidc-prerelease).
 `nixos-vps@0.1.2` is a separate TypeScript component and remains unchanged.
 
-## Next candidate
+## Verified OIDC release
 
-`0.2.0-dev.1` is being prepared to validate the configured npm trusted publisher
-through a real GitHub Actions OIDC upload. Its matching plugin and SDK artifacts
-use the same source commit; publication and provenance are not verified yet.
-The installer still delegates to `nixos-vps@0.1.2`. This release does not create,
-replace or update a Hetzner server.
+`0.2.0-dev.1` passed GitHub, npm and PyPI publication from the same reviewed
+commit. The npm upload used the configured trusted publisher and generated SLSA
+provenance; actual registry downloads matched the candidate. See
+[executed evidence](validation.md#npm-oidc-prerelease), including the npm
+processing delay and verification-only retry. This did not access Hetzner or
+change a VPS. The publication gate is disabled again.
 
 ## Prepare without publishing
 
@@ -97,7 +98,8 @@ An npm login as `sgomezsal` provides access to the personal scope, but is not a
 trusted-publisher configuration for `@sgomezsal/nixos-vps`. The automated `npm`
 target requires a trusted publisher for this repository, `provider-release.yml`
 and environment `npm`. That relationship is configured for the scoped package
-with publishing permission; an actual npm OIDC upload remains untested.
+with publishing permission. A real OIDC upload and provenance verification passed
+for `0.2.0-dev.1`.
 
 For a package that does not yet exist, its first authenticated publication is a
 separate maintainer-authorized bootstrap step. Do not upload a placeholder or
@@ -108,14 +110,15 @@ See [npm trusted publishing](https://docs.npmjs.com/trusted-publishers/).
 No registry authorization is inferred from local compilation, an available name
 or an npm login. The first PyPI OIDC upload is verified in the
 [distribution evidence](validation.md#multi-language-prerelease-distribution).
-The initial npm upload used interactive authentication; npm OIDC remains untested.
+The initial `0.2.0-dev.0` npm upload used interactive authentication; the
+subsequent `0.2.0-dev.1` upload verified npm OIDC and provenance.
 Keep the publication gate disabled until prerequisites and candidate review are complete.
 
 ## Future publication order
 
 For a new, explicitly authorized release, first choose an unused version and
 update the provider metadata, generated SDKs and their version assertions. The
-versions below describe the first prerelease; do not republish it. Keep the
+versions below describe the verified OIDC prerelease; do not republish it. Keep the
 source commit fixed across all destinations.
 
 After explicit release authorization:
@@ -123,15 +126,15 @@ After explicit release authorization:
 1. Run `prepare` and review the candidate, source commit and checksums.
 2. Enable the repository variable and dispatch target `github`. Approve the
    `provider-release` environment. The job creates the plugin prerelease
-   `v0.2.0-dev.0`, uploads verified assets while it is still a draft, publishes it
+   `v0.2.0-dev.1`, uploads verified assets while it is still a draft, publishes it
    as a prerelease, and only then creates Go tag
-   `sdk/go/nixosvps/v0.2.0-dev.0`. It checks public Go module resolution and compares
+   `sdk/go/nixosvps/v0.2.0-dev.1`. It checks public Go module resolution and compares
    the downloaded source against the candidate.
 3. Complete the npm bootstrap/trust setup if needed. Dispatch `npm` and approve
-   the `npm` environment. The scoped SDK uses version `0.2.0-dev.0` and tag `next`;
+   the `npm` environment. The scoped SDK uses version `0.2.0-dev.1` and tag `next`;
    this does not promote or replace the original package's `latest` tag.
 4. Dispatch `pypi` and approve its environment. PyPI receives the wheel and source
-   distribution as version `0.2.0.dev0`, with OIDC attestations enabled.
+   distribution as version `0.2.0.dev1`, with OIDC attestations enabled.
 5. Review each verification result, then disable the repository variable again.
 
 The npm and PyPI jobs require the matching public plugin prerelease first, so

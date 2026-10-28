@@ -1,6 +1,6 @@
 # Multi-language provider prerelease
 
-The component provider has a published experimental `0.2.0-dev.0` prerelease.
+The component provider has a published experimental `0.2.0-dev.1` prerelease.
 The existing npm package
 `nixos-vps@0.1.2` remains unchanged. These SDKs call the same implementation
 through a local Node.js provider; Python and Go do not replace the installer.
@@ -10,10 +10,10 @@ through a local Node.js provider; Python and Go do not replace the installer.
 | Interface | Name | Version |
 | --- | --- | --- |
 | Existing TypeScript component | npm `nixos-vps` | 0.1.2, already published |
-| Remote TypeScript SDK | npm `@sgomezsal/nixos-vps` | 0.2.0-dev.0 |
-| Python SDK | distribution `pulumi-nixos-vps`, import `pulumi_nixos_vps` | 0.2.0.dev0 |
-| Go SDK | `github.com/sgomezsal/nixos-vps/sdk/go/nixosvps` | v0.2.0-dev.0 |
-| Local provider plugin | `nixos-vps`, x86_64 Linux | 0.2.0-dev.0 |
+| Remote TypeScript SDK | npm `@sgomezsal/nixos-vps` | 0.2.0-dev.1 |
+| Python SDK | distribution `pulumi-nixos-vps`, import `pulumi_nixos_vps` | 0.2.0.dev1 |
+| Go SDK | `github.com/sgomezsal/nixos-vps/sdk/go/nixosvps` | v0.2.0-dev.1 |
+| Local provider plugin | `nixos-vps`, x86_64 Linux | 0.2.0-dev.1 |
 
 ## Install the published prerelease
 
@@ -22,31 +22,32 @@ available, choose one SDK in your own project:
 
 ```sh
 # TypeScript
-npm install --ignore-scripts @sgomezsal/nixos-vps@0.2.0-dev.0
+npm install --ignore-scripts @sgomezsal/nixos-vps@0.2.0-dev.1
 
 # Python (inside a virtual environment)
-python -m pip install pulumi-nixos-vps==0.2.0.dev0
+python -m pip install pulumi-nixos-vps==0.2.0.dev1
 
 # Go (inside an initialized module)
-go get github.com/sgomezsal/nixos-vps/sdk/go/nixosvps@v0.2.0-dev.0
+go get github.com/sgomezsal/nixos-vps/sdk/go/nixosvps@v0.2.0-dev.1
 ```
 
 Install the matching plugin explicitly, or let Pulumi acquire it from the SDK's
 recorded GitHub download URL:
 
 ```sh
-pulumi plugin install resource nixos-vps 0.2.0-dev.0 --exact \
+pulumi plugin install resource nixos-vps 0.2.0-dev.1 --exact \
   --server github://api.github.com/sgomezsal/nixos-vps
 ```
 
 These commands install software; they do not create a server. Python and Go
 still require Node.js because the plugin hosts the existing TypeScript component.
-Use exact prerelease versions. npm currently exposes both `latest` and `next`
-for the new scoped package; that does not make this provider stable. The separate
-unscoped `nixos-vps` package remains at `0.1.2`.
+Use exact prerelease versions. The scoped package's `next` tag selects
+`0.2.0-dev.1`; `latest` still selects `0.2.0-dev.0`. Neither is a stable provider
+release. The separate unscoped `nixos-vps` package remains at `0.1.2`.
 
 See [publication evidence](validation.md#multi-language-prerelease-distribution)
-for public download and consumer checks. A published TypeScript consumer has
+for the first prerelease, and [OIDC release evidence](validation.md#npm-oidc-prerelease)
+for the current release. A published TypeScript consumer has
 [migrated an existing Hetzner test stack](validation.md#live-typescript-provider-migration)
 without replacing or reinstalling the server. Subsequent
 [Python/Go switches and a return to TypeScript](validation.md#live-language-switches)
@@ -114,11 +115,11 @@ preparing another one.
 
 The output contains:
 
-- `pulumi-resource-nixos-vps-v0.2.0-dev.0-linux-amd64.tar.gz`
-- `sgomezsal-nixos-vps-0.2.0-dev.0.tgz`
-- `pulumi_nixos_vps-0.2.0.dev0-py3-none-any.whl`
-- `pulumi_nixos_vps-0.2.0.dev0.tar.gz`
-- `nixos-vps-go-0.2.0-dev.0.tar.gz`
+- `pulumi-resource-nixos-vps-v0.2.0-dev.1-linux-amd64.tar.gz`
+- `sgomezsal-nixos-vps-0.2.0-dev.1.tgz`
+- `pulumi_nixos_vps-0.2.0.dev1-py3-none-any.whl`
+- `pulumi_nixos_vps-0.2.0.dev1.tar.gz`
+- `nixos-vps-go-0.2.0-dev.1.tar.gz`
 - `schema.json`, `manifest.json` and `SHA256SUMS`
 
 The manifest records the source commit, whether the working tree was dirty, a
@@ -142,8 +143,8 @@ directory, check out its matching source version, and verify it first:
 
 ```sh
 node scripts/provider-release.cjs verify /absolute/path/to/artifacts
-pulumi plugin install resource nixos-vps 0.2.0-dev.0 \
-  --file /absolute/path/to/artifacts/pulumi-resource-nixos-vps-v0.2.0-dev.0-linux-amd64.tar.gz \
+pulumi plugin install resource nixos-vps 0.2.0-dev.1 \
+  --file /absolute/path/to/artifacts/pulumi-resource-nixos-vps-v0.2.0-dev.1-linux-amd64.tar.gz \
   --exact
 ```
 
@@ -152,18 +153,18 @@ Install the chosen SDK artifact in the consumer's own environment:
 
 ```sh
 # TypeScript project
-npm install --ignore-scripts /absolute/path/to/artifacts/sgomezsal-nixos-vps-0.2.0-dev.0.tgz
+npm install --ignore-scripts /absolute/path/to/artifacts/sgomezsal-nixos-vps-0.2.0-dev.1.tgz
 
 # Python project, inside its virtual environment
-python -m pip install /absolute/path/to/artifacts/pulumi_nixos_vps-0.2.0.dev0-py3-none-any.whl
+python -m pip install /absolute/path/to/artifacts/pulumi_nixos_vps-0.2.0.dev1-py3-none-any.whl
 
 # Go project: extract the module to a separate local directory
 # First create the project with go mod init and add your main.go imports.
 mkdir -p /absolute/path/to/local-module
-tar -xzf /absolute/path/to/artifacts/nixos-vps-go-0.2.0-dev.0.tar.gz \
+tar -xzf /absolute/path/to/artifacts/nixos-vps-go-0.2.0-dev.1.tar.gz \
   -C /absolute/path/to/local-module
 go mod edit -replace=github.com/sgomezsal/nixos-vps/sdk/go/nixosvps=/absolute/path/to/local-module/nixosvps
-go mod edit -require=github.com/sgomezsal/nixos-vps/sdk/go/nixosvps@v0.2.0-dev.0
+go mod edit -require=github.com/sgomezsal/nixos-vps/sdk/go/nixosvps@v0.2.0-dev.1
 go mod tidy
 ```
 
@@ -203,9 +204,9 @@ publication evidence for the source commit and workflow runs.
 
 Public distribution uses the schema's explicit
 `github://api.github.com/sgomezsal/nixos-vps` plugin URL and Pulumi's standard
-archive filename. The plugin release tag is `v0.2.0-dev.0`. A published
+archive filename. The plugin release tag is `v0.2.0-dev.1`. A published
 Go module uses generated source under `sdk/go/nixosvps`
-and the separate submodule tag `sdk/go/nixosvps/v0.2.0-dev.0`. Candidate preparation
+and the separate submodule tag `sdk/go/nixosvps/v0.2.0-dev.1`. Candidate preparation
 checks the source against its archive; preparation never creates either release
 tag. Future releases still require registry trust, explicit candidate preparation
 and a separate release review. See the official

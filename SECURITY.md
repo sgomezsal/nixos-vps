@@ -91,3 +91,9 @@ switches and a return to TypeScript also retained the existing resources,
 protection, SSH identity, generation and disk. Keep resource protection enabled
 during migration; an uncertain preview is not
 evidence that a replacement is safe.
+
+The scoped SDK's `0.2.0-dev.1` npm publication used GitHub OIDC and signed SLSA
+provenance. Downloaded artifact hashes, the provenance source identity and an
+independent npm signature/attestation audit passed. PyPI used OIDC attestations.
+See [release evidence](docs/validation.md#npm-oidc-prerelease). Provenance records
+the release origin; it does not establish that the installer is free of defects.

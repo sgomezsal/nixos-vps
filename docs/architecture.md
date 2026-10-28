@@ -106,7 +106,7 @@ with a pinned CLI and packages their public entry points. Two builds from separa
 directories must have identical artifact hashes. Exact-artifact consumer tests
 then run before atomic output creation. Ordinary CI uploads private preview
 artifacts. A separate manually gated workflow publishes reviewed candidates; the
-`0.2.0-dev.0` plugin and SDKs are available from public distribution. See
+`0.2.0-dev.1` plugin and SDKs are available from public distribution. See
 [multi-language distribution](multilanguage.md) and
 [publication controls](provider-publication.md).
 

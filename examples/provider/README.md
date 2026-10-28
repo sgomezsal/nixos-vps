@@ -1,7 +1,7 @@
 # Run a preview SDK from local artifacts
 
 Choose one language and a new directory. These examples exercise local preview
-artifacts for the experimental `0.2.0-dev.0` provider. For the published SDKs,
+artifacts for the experimental `0.2.0-dev.1` provider. For the published SDKs,
 use the [registry installation commands](../../docs/multilanguage.md#install-the-published-prerelease).
 This guide does not replace the original package quickstart.
 Installation on a real server formats its disk. None of the setup or validation
@@ -30,8 +30,8 @@ login or provider API call:
 export PULUMI_HOME="$(mktemp -d /tmp/nixos-vps-preview-plugins-XXXXXX)"
 export PULUMI_DISABLE_AUTOMATIC_PLUGIN_ACQUISITION=true
 export PULUMI_IGNORE_AMBIENT_PLUGINS=true
-pulumi plugin install resource nixos-vps 0.2.0-dev.0 --exact \
-  --file "$ARTIFACTS/pulumi-resource-nixos-vps-v0.2.0-dev.0-linux-amd64.tar.gz"
+pulumi plugin install resource nixos-vps 0.2.0-dev.1 --exact \
+  --file "$ARTIFACTS/pulumi-resource-nixos-vps-v0.2.0-dev.1-linux-amd64.tar.gz"
 ```
 
 ## 2. Generate and validate the shared NixOS/SSH setup
@@ -73,7 +73,7 @@ continues to match. No Hetzner credentials are needed for local validation.
 ### TypeScript
 
 ```sh
-npm install --ignore-scripts "$ARTIFACTS/sgomezsal-nixos-vps-0.2.0-dev.0.tgz"
+npm install --ignore-scripts "$ARTIFACTS/sgomezsal-nixos-vps-0.2.0-dev.1.tgz"
 cp "$SOURCE/examples/provider/typescript/index.ts" index.ts
 npm pkg set main=index.ts
 npx tsc --noEmit
@@ -87,7 +87,7 @@ The generated `Pulumi.yaml` already selects Node.js with TypeScript support.
 ```sh
 printf '\n.venv/\n__pycache__/\n' >> .gitignore
 python3 -m venv .venv
-.venv/bin/python -m pip install "$ARTIFACTS/pulumi_nixos_vps-0.2.0.dev0-py3-none-any.whl"
+.venv/bin/python -m pip install "$ARTIFACTS/pulumi_nixos_vps-0.2.0.dev1-py3-none-any.whl"
 .venv/bin/python -m pip check
 cp "$SOURCE/examples/provider/python/__main__.py" __main__.py
 node -e 'require("fs").writeFileSync("Pulumi.yaml", JSON.stringify({name:"standalone-nixos",runtime:{name:"python",options:{virtualenv:".venv"}}},null,2)+"\n")'
@@ -105,10 +105,10 @@ Extract the local artifact module outside the consumer project:
 
 ```sh
 export LOCAL_MODULE="$(mktemp -d /tmp/nixos-vps-preview-go-XXXXXX)"
-tar -xzf "$ARTIFACTS/nixos-vps-go-0.2.0-dev.0.tar.gz" -C "$LOCAL_MODULE"
+tar -xzf "$ARTIFACTS/nixos-vps-go-0.2.0-dev.1.tar.gz" -C "$LOCAL_MODULE"
 cp "$SOURCE/examples/provider/go/main.go" main.go
 go mod init example.local/nixos-vps-preview
-go mod edit -require=github.com/sgomezsal/nixos-vps/sdk/go/nixosvps@v0.2.0-dev.0
+go mod edit -require=github.com/sgomezsal/nixos-vps/sdk/go/nixosvps@v0.2.0-dev.1
 go mod edit -replace=github.com/sgomezsal/nixos-vps/sdk/go/nixosvps="$LOCAL_MODULE/nixosvps"
 go mod tidy
 go build -o /tmp/nixos-vps-preview-consumer .

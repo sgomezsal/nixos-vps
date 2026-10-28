@@ -355,7 +355,7 @@ separately.
 
 ## Multi-language prerelease distribution
 
-The published experimental provider is built from commit
+The first published experimental provider, `0.2.0-dev.0`, was built from commit
 `5a217d3d74220dbc1b1338088cea8c4b9eb925ca`. The existing unscoped
 `nixos-vps@0.1.2` package and its `latest`/`next` tags were unchanged.
 
@@ -400,8 +400,9 @@ The GitHub publication gate was reset to `false`. npm subsequently confirmed
 creation of the scoped package's GitHub trusted publisher for
 `sgomezsal/nixos-vps`, `provider-release.yml`, environment `npm`, with publishing
 permission. Configuration is verified by npm's successful creation response;
-an actual npm OIDC upload has not yet been exercised. The first manual npm
-publication does not test that upload path. No Hetzner account or
+an actual npm OIDC upload had not yet been exercised at that stage. The first
+manual npm publication did not test that upload path. The subsequent
+[OIDC prerelease](#npm-oidc-prerelease) below closes that distribution gap. No Hetzner account or
 server was accessed during this distribution check. The separately authorized
 [live TypeScript migration](#live-typescript-provider-migration) below followed it.
 
@@ -508,3 +509,58 @@ occurred. The consumer was left in TypeScript with all language sources retained
 These checks verify interoperability on an installed server, not initial
 installation through the new provider, arbitrary target configurations or
 additional supported platforms. No package was published as part of these tests.
+
+## npm OIDC prerelease
+
+On 2026-10-28, provider `0.2.0-dev.1` and its matching SDKs were published from
+clean commit `17f73ec33153f8e1079aa0136954859ff77d92a1`. The underlying installer
+remains `nixos-vps@0.1.2`; no installer behavior changed.
+
+Executed evidence:
+
+- [Source CI](https://github.com/sgomezsal/nixos-vps/actions/runs/40656619908)
+  passed the complete local validation and provider artifact jobs. The core
+  suite passed 54 tests and the provider unit suite passed 19, without skips.
+  Local engine integration also passed for TypeScript, Python and Go, including
+  protected migration, lifecycle operations and partial-failure recovery with
+  loopback substitute providers.
+- Two independent local builds produced identical hashes for all six artifacts.
+  Candidates from each hosted publication workflow matched those artifacts and
+  the same clean source identity before environment approval.
+- [GitHub publication](https://github.com/sgomezsal/nixos-vps/actions/runs/40658556787)
+  published the [plugin prerelease](https://github.com/sgomezsal/nixos-vps/releases/tag/v0.2.0-dev.1)
+  and matching Go submodule tag. Public Go source matched the candidate.
+- [npm publication](https://github.com/sgomezsal/nixos-vps/actions/runs/40659450480/attempts/1)
+  successfully uploaded `@sgomezsal/nixos-vps@0.2.0-dev.1` using GitHub OIDC,
+  without a personal npm token, and published signed provenance to
+  [Sigstore](https://search.sigstore.dev/?logIndex=3535385305).
+  Registry processing exceeded the verifier's initial bounded window, so that
+  attempt failed honestly at download verification after a successful upload.
+  Once processing completed, a [verification-only retry](https://github.com/sgomezsal/nixos-vps/actions/runs/40659450480/attempts/2)
+  verified the existing bytes, skipped publication and passed. No version was
+  overwritten or incremented to bypass processing.
+- The actual npm tarball SHA-256 matched the reviewed candidate:
+  `655fbcb4a04b160d66796e8cb15ae20910c990c618375e57ea824f3c4b1d5dcc`.
+  Its public SLSA statement matched the repository, workflow, exact source commit,
+  original run/attempt and the candidate tarball SHA-512. An independent consumer
+  passed CJS/ESM imports and TypeScript checks. `npm audit signatures`, using npm
+  11.15.0, verified 222 registry signatures and 93 attestations in that dependency
+  graph. These counts describe that executed graph, not a permanent coverage metric.
+- [PyPI publication](https://github.com/sgomezsal/nixos-vps/actions/runs/40659695008)
+  used OIDC with attestations; downloaded wheel and sdist hashes matched the
+  candidate. A pip consumer initially saw the previous simple-index cache;
+  after propagation, a fresh independent installation passed imports and
+  `pip check`. The initial failed consumer run is not counted as a pass.
+- Independent empty-HOME consumers installed the public plugin and compiled Go
+  using its public module, without local replacements. All four distribution
+  consumer checks passed without constructing cloud resources.
+
+The scoped npm `next` tag selects `0.2.0-dev.1`; `latest` remains `0.2.0-dev.0`.
+The original unscoped component and its tags are unchanged. The repository's
+`PROVIDER_RELEASE_ENABLED` variable was reset to `false` after verification.
+
+This release validation did not load operator credentials, access Hetzner,
+connect to the VPS, create cloud resources, reinstall NixOS or reboot a server.
+Previously recorded live migration/language-switch results used `0.2.0-dev.0`;
+they are not a fresh live installation test of `0.2.0-dev.1`. Initial provisioning
+through the multi-language provider remains unverified.
