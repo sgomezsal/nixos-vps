@@ -54,10 +54,13 @@ without replacing or reinstalling the server. Subsequent
 retained that same state and server. A subsequent
 [fresh installation](validation.md#fresh-provider-installation) through the
 published `0.2.0-dev.1` TypeScript SDK passed on a new CX23, including a normal
-reboot and an unchanged repeat update. Fresh creation through Python/Go was not
-separately executed.
+reboot and an unchanged repeat update. A separately authorized
+[fresh Python installation](validation.md#fresh-python-installation) also passed
+with `pulumi-nixos-vps==0.2.0.dev1`, including reboot and unchanged repeat update.
 
-Fresh Python/Go creation tests are currently paused. The
+The first Go attempt was [capacity-blocked](validation.md#go-capacity-blocked-attempt).
+After explicit location approval, a [fresh Go installation](validation.md#fresh-go-installation)
+passed on a CX23 in Nuremberg, including reboot and unchanged repeat update. The
 [stable-release preparation](provider-publication.md#stable-020-preparation)
 records the remaining API, distribution and support-scope decisions; it does not
 change the published prerelease or authorize cloud operations.
@@ -285,14 +288,18 @@ not counted as a pass. The old disposable test server and its IPs were removed
 before the new server was created, keeping at most one test VPS. Pinned SSH/HTTP,
 a normal reboot and an unchanged repeat preview/update passed. See
 [executed evidence](validation.md#fresh-provider-installation). This does not
-establish fresh creation through Python/Go, other plans or other boot modes.
+establish other plans or boot modes. A later
+[fresh Python test](validation.md#fresh-python-installation) separately verified
+initial installation through the Python SDK. A subsequent
+[fresh Go test](validation.md#fresh-go-installation) passed in Nuremberg after
+explicit location approval; it used the same model and reviewed price.
 
 The reusable component accepts x86_64 CX, CPX and CCX plans; it is not restricted
 to the plan used by the test consumer. Choose an explicit plan and location,
 check current pricing and capacity, and leave RAM headroom for kexec. ARM/CAX
 requires a different target configuration and is unsupported by this release.
 Only CX23 has live installation evidence, through the original component and
-the TypeScript provider SDK.
+the TypeScript/Python SDKs in Helsinki and Go SDK in Nuremberg.
 
 Provider availability is not a reservation. Keep an existing server protected
 while evaluating alternatives; never automatically choose a more expensive plan

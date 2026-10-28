@@ -19,15 +19,16 @@ change a VPS. The publication gate is disabled again.
 Review date: **2026-10-28**, based on source commit `53c62a0` and its
 [successful CI run](https://github.com/sgomezsal/nixos-vps/actions/runs/40735635470).
 `0.2.0` is a proposed release, not a prepared or approved stable artifact.
-Published versions and tags remain unchanged. The local workflow changes below
-have not been dispatched.
+Published versions and tags remain unchanged. The channel workflow changes passed
+hosted CI; no stable publication dispatch has occurred.
 
-Fresh creation tests through Python and Go are **paused**. Existing local SDK
-and engine tests remain useful, and the earlier live language switches retain
-their recorded scope. Neither establishes fresh installation through those SDKs.
-Before a stable release, explicitly decide whether to resume those tests or ship
-with that limitation clearly documented. This review does not authorize another
-deployment or replacement.
+Fresh creation through the published TypeScript,
+[Python](validation.md#fresh-python-installation) and
+[Go](validation.md#fresh-go-installation) SDKs passed in separately authorized
+live tests, including reboot and unchanged repeat update. Go ran in Nuremberg
+after Helsinki capacity blocked the first attempt and a location change was
+explicitly approved. These results retain their CX23/BIOS and recovery limits;
+this guide does not authorize another deployment or replacement.
 
 ### API and compatibility
 
@@ -56,9 +57,10 @@ support or prove untested recovery paths.
 | --- | --- | --- |
 | API | Schema/baseline and adapter tests; persisted migration evidence | Review the final regenerated SDK diff and retain resource identity |
 | Live TypeScript | Published `0.2.0-dev.1` fresh installation, reboot and unchanged repeat deployment passed | Retain the [recorded limits](validation.md#fresh-provider-installation); no repeat deployment is needed for documentation |
-| Python/Go | Public consumers, local engine tests and earlier live state switches passed | Fresh installation paused; make an explicit support-scope decision |
+| Live Python | Published `0.2.0.dev1` fresh installation, reboot and unchanged repeat update passed | Retain the recorded CX23/BIOS limits |
+| Live Go | Published `v0.2.0-dev.1` fresh installation, reboot and unchanged repeat update passed in Nuremberg | Retain the recorded CX23/BIOS limits |
 | Versioning | Artifact naming/codegen accepts a stable version | Update provider/schema/runtime metadata, lockfile roots, assertions, examples and generated Go SDK together; do not bump the original component automatically |
-| Publication channels | Local channel policy and regression tests; previous OIDC prerelease evidence | Review the workflow diff and run hosted CI; a real stable upload remains untested |
+| Publication channels | Channel regression tests and [hosted CI](https://github.com/sgomezsal/nixos-vps/actions/runs/40742650068) passed; previous OIDC prerelease evidence retained | A real stable upload remains untested |
 | Artifacts | CI verified reproducible previews at the reviewed commit | Build a new clean-commit stable candidate; old previews cannot establish stable artifact integrity |
 | Public Registry | Schema/download URL and published SDKs exist | Prepare Registry metadata and overview, validate documentation generation and request listing separately |
 
@@ -116,16 +118,17 @@ installation, local path requirements and tested language/platform boundaries.
 Confirm publisher registration and tag/schema version agreement before submission.
 No Registry pull request has been opened by this preparation.
 
-Channel-aware publication is implemented locally with regression coverage.
-Version changes, final candidate generation, hosted CI, Registry submission and
-actual uploads remain future gates. Fresh Python/Go creation tests stay paused.
+Channel-aware publication passed local regression tests and hosted CI.
+Version changes, final candidate generation, candidate CI, Registry submission and
+actual uploads remain future gates. Fresh TypeScript/Python/Go evidence is
+recorded separately and does not establish a stable upload.
 
 The channel review passed the complete `./scripts/validate.sh` suite, including
 54 core tests, 24 provider tests, independent package/engine consumers and workflow
 syntax validation. Channel regression tests cover explicit authorization, both
 GitHub channels and interrupted retries, npm tag verification/repair refusal,
 stable PyPI resolution and workflow wiring. These use substitute APIs; they do
-not upload releases or replace the paused live tests. See the
+not upload releases or replace the separately executed live tests. See the
 [validation record](validation.md#release-channel-review) for execution boundaries.
 
 ## Prepare without publishing

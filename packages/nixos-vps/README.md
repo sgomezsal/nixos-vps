@@ -17,7 +17,11 @@ for the tested boundaries and fix status.
 The unchanged published `0.1.2` runtime also completed a fresh installation through
 the `0.2.0-dev.1` component provider. All twenty bundled core files matched this
 npm package. Pinned SSH/HTTP checks, a controlled reboot and an unchanged repeat
-preview/update passed. See [fresh-provider evidence](https://github.com/sgomezsal/nixos-vps/blob/main/docs/validation.md#fresh-provider-installation).
+preview/update passed through separate fresh TypeScript, Python and Go
+installations. See
+[Go evidence](https://github.com/sgomezsal/nixos-vps/blob/main/docs/validation.md#fresh-go-installation),
+[Python evidence](https://github.com/sgomezsal/nixos-vps/blob/main/docs/validation.md#fresh-python-installation)
+and [fresh-provider evidence](https://github.com/sgomezsal/nixos-vps/blob/main/docs/validation.md#fresh-provider-installation).
 
 ## Quickstart
 

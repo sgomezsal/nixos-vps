@@ -101,7 +101,11 @@ TypeScript SDK has migrated one existing test stack, followed by Python/Go
 switches and a return to TypeScript without cloud-resource changes. A subsequent
 [fresh TypeScript provider installation](validation.md#fresh-provider-installation)
 also passed on a CX23, followed by a normal reboot and unchanged repeat update.
-Other target configurations and recovery paths remain outside that evidence.
+A separate [fresh Python installation](validation.md#fresh-python-installation)
+passed the same readiness, reboot and repeat-update checks with the published SDK.
+A later [fresh Go installation](validation.md#fresh-go-installation) passed on a
+CX23 in Nuremberg with the same readiness, reboot and no-op checks. Other plans
+and recovery paths remain outside that evidence.
 See [language-switch evidence](validation.md#live-language-switches) for the earlier SDK versions.
 
 The provider preview pipeline installs its locked runtime, generates the SDKs

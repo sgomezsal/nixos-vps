@@ -10,8 +10,9 @@ SSH. The IPv4 output resolves after installation and SSH readiness checks comple
 > [!NOTE]
 > **Experimental / pre-release.** Local validation covers package and provider tests,
 > four VM installation checks, NixOS builds and independent tarball consumers.
-> Live CX23 validation covers the original TypeScript component and a fresh
-> installation through the published `0.2.0-dev.1` provider. Checks verified pinned
+> Live CX23 validation covers the original TypeScript component and fresh
+> installations through the published TypeScript, Python and Go provider SDKs.
+> Checks verified pinned
 > SSH through installation, HTTP readiness, normal reboot and unchanged repeat
 > deployments. A routine NixOS update also passed on the original test server. See
 > [validation coverage](docs/validation.md) for details.
@@ -90,7 +91,10 @@ platform requirements and migration limits. An existing test VPS passed migratio
 and TypeScript → Python → Go → TypeScript switches without infrastructure changes
 or another installation. See [live validation](docs/validation.md#live-language-switches)
 for those results and the [fresh-provider installation](docs/validation.md#fresh-provider-installation)
-for the subsequent TypeScript creation test and its remaining limits.
+for the TypeScript creation test. A separate
+[fresh Python installation](docs/validation.md#fresh-python-installation) also
+passed, followed by a [fresh Go installation](docs/validation.md#fresh-go-installation)
+in Nuremberg. Both passed reboot and unchanged repeat-update checks.
 
 ## Development
 

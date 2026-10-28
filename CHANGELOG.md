@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Record a fresh installation through the published Go SDK in Nuremberg, with
+  pinned SSH/HTTP, one controlled reboot and unchanged repeat deployment. The
+  earlier Helsinki capacity block retained the working server; the later location
+  change was explicitly approved, with no concurrent second VPS or plan upgrade.
+- Record a fresh installation through the published Python SDK, with pinned
+  SSH/HTTP readiness, one controlled reboot and unchanged repeat deployment.
+  The old test server was retired before creation; Go was validated separately.
+
 - Add an explicit stable/prerelease publication channel, checked against the
   candidate version. Stable scoped SDKs use npm `latest`; prereleases use `next`.
   Verification checks the expected npm tag and rejects conflicting GitHub

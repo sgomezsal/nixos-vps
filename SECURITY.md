@@ -89,7 +89,11 @@ without cloud-resource changes, reinstalling or disabling protection. A subseque
 fresh installation through the published `0.2.0-dev.1`
 TypeScript SDK passed on one CX23 in Helsinki, including pinned readiness, a
 normal reboot and an unchanged repeat update. See
-[fresh-installation evidence](docs/validation.md#fresh-provider-installation). Earlier live Python/Go
+[fresh-installation evidence](docs/validation.md#fresh-provider-installation). A
+[separate fresh Python installation](docs/validation.md#fresh-python-installation)
+also passed pinned readiness, reboot and an unchanged repeat update. A
+[fresh Go installation in Nuremberg](docs/validation.md#fresh-go-installation)
+subsequently passed the same checks. Earlier live Python/Go
 switches and a return to TypeScript also retained the existing resources,
 protection, SSH identity, generation and disk. Keep resource protection enabled
 during migration; an uncertain preview is not

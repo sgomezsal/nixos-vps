@@ -23,7 +23,11 @@ local store; this run does not claim new VM boots. Local documentation links and
 shell-block syntax passed separately. At the time of this local run, hosted CI
 for these changes and a real stable publication had not been run. No operator credentials,
 Hetzner access, VPS operations, registry uploads or dist-tag changes were used.
-Fresh live Python/Go creation tests remain paused.
+At that review, fresh live Python/Go creation tests were paused. The separately
+authorized [Python test](#fresh-python-installation) below subsequently passed;
+Go creation first reached a [capacity-blocked preview](#go-capacity-blocked-attempt),
+then passed a separately authorized [fresh installation](#fresh-go-installation)
+in Nuremberg.
 
 ## Current status
 
@@ -35,7 +39,12 @@ Fresh live Python/Go creation tests remain paused.
   published `0.2.0-dev.0` SDKs passed migration and language switches on the
   existing server. A subsequent [fresh installation](#fresh-provider-installation)
   through the `0.2.0-dev.1` TypeScript SDK passed on a new CX23, including pinned
-  readiness, a controlled reboot and unchanged repeat preview/update.
+  readiness, a controlled reboot and unchanged repeat preview/update. A separate
+  [fresh Python installation](#fresh-python-installation) passed the same checks
+  with the published `0.2.0.dev1` SDK. A subsequent Go consumer passed local
+  validation and actual preview before [capacity blocked creation](#go-capacity-blocked-attempt).
+  After explicit location approval, its [fresh installation](#fresh-go-installation)
+  in Nuremberg passed readiness, reboot and unchanged repeat update.
 - A fresh-provider test was prepared on 2026-10-28 but stopped before any cloud
   mutation because the selected server type was unavailable. Local consumer
   validation passed; the blocked attempt is not an installation pass. No
@@ -680,6 +689,127 @@ The unrelated server/project was outside the scoped credentials and operations.
 This was an authorized billable deployment, distinct from zero-cost local tests
 and registry publication checks. It establishes one real fresh TypeScript-provider
 installation, not universal plan support or production readiness. Other plans,
-live UEFI, fresh creation through Python/Go, package/kernel upgrades and recovery
-after kexec or formatting remain unverified. Earlier Python/Go state switches
+live UEFI, package/kernel upgrades and recovery after kexec or formatting remain
+unverified. The subsequent [Python test](#fresh-python-installation) below adds
+initial Python provisioning evidence; the later [Go test](#fresh-go-installation)
+adds fresh Go evidence. Earlier Python/Go state switches
 retain their separately recorded `0.2.0-dev.0` evidence.
+
+
+## Fresh Python installation
+
+**PASS — Executed, 2026-10-28.** An independent Python consumer installed
+`pulumi-nixos-vps==0.2.0.dev1` from PyPI with `pulumi==3.217.1`, using its own
+virtual environment, frozen requirements, isolated Pulumi backend/plugin home,
+and newly generated external deployment/host SSH identities. It installed the
+published `nixos-vps@0.2.0-dev.1` plugin from GitHub, from release source
+`17f73ec33153f8e1079aa0136954859ff77d92a1`. The npm `nixos-vps@0.1.2`
+initializer/validator supplied the copied locked NixOS template. All twenty
+bundled core files matched that independent npm installation; the SDK, provider
+and installer were not patched locally.
+
+| Check | Executed result |
+| --- | --- |
+| Local consumer | pip dependency check, Python compilation and real NixOS/SSH/disk preflight passed |
+| Budget/capacity | CX23 availability and monthly/hourly account pricing checked before retirement and creation; no automatic upgrade |
+| Isolation | Reviewed deletion of the exact prior test server/firewall/SSH registration; both old IPs removed and empty dedicated project confirmed before creation |
+| Saved create plan | One CX23 in Helsinki, named `nixos-vps`, Ubuntu 24.04 bootstrap, backups disabled and protection enabled |
+| Initial installation | Python runtime and published SDK constructed the component; bootstrap SSH, install, post-install SSH and ready phases completed with `installed=true` |
+| Readiness | Pinned SSH, public-key-only authentication, SSH/Caddy active, no failed units, HTTP 200 and a distinct Python configuration marker passed |
+| Disk/boot | NixOS 26.05, BIOS, single `/dev/sda` with a nonempty serial, ext4 root and vfat boot; previous test markers absent |
+| Controlled reboot | One reboot changed the boot ID while retaining the system generation, disk/partitions and pinned SSH/HTTP readiness |
+| Repeat deployment | All ten preview entries were `same`; saved-plan update preserved resource IDs, inputs, outputs, protection and installation without another reboot |
+| Final scope | One server; six protected managed resources; no backups, snapshots, volumes, networks, floating IPs or load balancers |
+
+Initial apply took **4 minutes 22 seconds**. The post-apply inventory request
+encountered a transient connection failure after Pulumi succeeded and the
+encrypted checkpoint was saved. A read-only retry confirmed the result; the
+installation was not repeated. Independent readiness, reboot and no-op checks
+then passed. Secret values were inspected only in memory; checkpoints, source
+hashes, reviewed plans and operational details remain in private evidence.
+
+This was an authorized billable replacement, never a second concurrent test VPS.
+The unrelated server/project was outside the scoped credentials and operations.
+No package, tag or release was published. This adds fresh Python installation
+evidence on one CX23; it does not establish production readiness, other plans,
+live UEFI or recovery after formatting. The subsequent
+[Go attempt](#go-capacity-blocked-attempt) was initially blocked before cloud
+mutation; the later [Nuremberg installation](#fresh-go-installation) passed.
+
+
+## Go capacity-blocked attempt
+
+**PARTIAL — Executed locally; live installation BLOCKED, 2026-10-28.** A new
+independent Go consumer used the public module
+`github.com/sgomezsal/nixos-vps/sdk/go/nixosvps@v0.2.0-dev.1`, without a local
+replacement, and the matching published plugin. It had new external SSH identities
+and an isolated Pulumi backend/plugin home. `go mod verify`, compilation and the
+published core CLI's real NixOS/SSH/disk preflight passed.
+
+An actual Pulumi preview ran the Go program and remote component transform,
+producing a create-only saved plan for exactly one protected CX23 in Helsinki,
+named `nixos-vps`, with backups disabled. This was a preview, not provisioning.
+The initial availability lookup allowed preparation, but capacity became
+unavailable before retirement. The ordinary preparation guard stopped. A
+separate preview-only operation completed local review without weakening the
+retirement/apply capacity checks. The saved plan is locked against apply until a
+new source, inventory, budget and capacity review.
+
+During that blocked attempt, no cloud resource was created, deleted, replaced or
+unprotected. The Python server retained six protected resources, its original program, system
+generation, disk and boot ID; pinned SSH and HTTP readiness passed afterward.
+No reboot, reinstall, package publication or automatic plan upgrade occurred.
+Account hourly/monthly prices remained within the reviewed limits.
+
+At that stage, the next action was a new capacity/price/inventory and source/plan
+review. Capacity is not a reservation. The Helsinki attempt remains blocked in
+this historical record; it is not counted as an installation pass. The subsequent
+[Go installation in Nuremberg](#fresh-go-installation) below used explicit location
+approval and a new reviewed plan. Private evidence retains the original blocked
+plan separately from the successful run.
+
+
+## Fresh Go installation
+
+**PASS — Executed, 2026-10-28.** An independent Go consumer used the public
+`github.com/sgomezsal/nixos-vps/sdk/go/nixosvps@v0.2.0-dev.1` module, with no local
+replacement, and matching GitHub plugin from release source
+`17f73ec33153f8e1079aa0136954859ff77d92a1`. It used its own backend/plugin home,
+new external deployment/host SSH identities, copied locked NixOS template and
+published `nixos-vps@0.1.2` initializer/validator. All twenty bundled core files
+matched the independent npm installation; no SDK, provider or installer patch
+was required. Module verification, Go compilation and local NixOS/SSH/disk
+preflight passed before any retirement.
+
+Helsinki capacity had blocked the first attempt without a cloud mutation. After
+explicit approval to use Germany at the same reviewed price, the old preview was
+archived and a new create-only plan selected **Nuremberg (`nbg1`)**. This was not
+an automatic region/plan fallback. Price and capacity were checked again before
+retirement and creation. The exact Python test server, firewall and SSH
+registration were retired using a saved plan; both auto-delete IPs were removed
+and an empty dedicated project confirmed before Go created its replacement.
+
+| Check | Executed result |
+| --- | --- |
+| Creation | Exactly one protected CX23, named `nixos-vps`, Ubuntu 24.04 bootstrap and backups disabled |
+| Installation | Go program and remote component transform executed; bootstrap SSH, install, post-install SSH and ready phases completed with `installed=true` |
+| Readiness | Pinned SSH, public-key-only authentication, active SSH/Caddy, no failed units, HTTP 200 and a distinct Go configuration marker |
+| Disk/boot | NixOS 26.05, BIOS, one `/dev/sda` with a nonempty serial, ext4 root and vfat boot; previous test markers absent |
+| Controlled reboot | One reboot changed the boot ID; system generation, disk/partitions and pinned SSH/HTTP readiness retained |
+| Repeat deployment | Ten `same` plan entries; saved-plan update preserved IDs, inputs, outputs, provider references, protection and installation without another reboot |
+| Final inventory | One server, two auto-delete Primary IPs, one firewall and one SSH registration; no backups, snapshots, volumes, networks, floating IPs or load balancers |
+| Protection | Component and five managed children protected after installation and repeat deployment |
+
+Initial apply took **4 minutes 18 seconds**. The final account price check stayed
+within the reviewed monthly/hourly limits. Only one test VPS existed at any time.
+Private evidence retains plan/source hashes, Go locks, encrypted checkpoints,
+phase records and before/after readiness. Decrypted state values were compared
+only in memory; operator metadata and private identities are not distributed.
+
+This was an authorized billable test, separate from zero-cost engine tests and
+registry publication. The unrelated server/project was outside the scoped
+credentials and operations. No package, tag or release was published. Fresh
+installation is now verified through TypeScript, Python and Go for the recorded
+CX23/BIOS cases; other plans, live UEFI, package/kernel upgrades and interrupted
+post-formatting recovery remain unverified. These tests do not establish general
+production readiness or a real stable-version publication.
