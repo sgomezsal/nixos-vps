@@ -18,7 +18,7 @@ npm test
 `npm test` runs the component and CLI tests, then installs the package tarball in
 an independent consumer project to check its imports, declarations and templates.
 
-For the experimental component provider, use `nix develop .#provider` and run
+For the multi-language component provider, use `nix develop .#provider` and run
 `npm run test:provider` after building. This adds Python and Go and exercises
 generated SDKs through a locally installed plugin. The full suite includes this
 test. Keep the provider workspace private. The existing `release.yml` workflow
@@ -217,7 +217,7 @@ npm view nixos-vps dist-tags --registry=https://registry.npmjs.org/
 This requires npm authentication and any additional verification requested by npm.
 It changes a distribution pointer, not the tarball or the `next` tag. `latest`
 means the recommended default installation; it is not a production-readiness
-guarantee. Keep the experimental status and validation limits visible.
+guarantee. Keep the supported scope and validation limits visible.
 
 ### Documentation in published packages
 

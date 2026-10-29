@@ -83,8 +83,8 @@ after kexec or formatting remain unverified. This is not a comprehensive securit
 audit. See
 [validation coverage](docs/validation.md).
 
-Those live results cover the original TypeScript component. The experimental
-multi-language provider has also migrated one existing TypeScript test stack
+Those live results cover the original TypeScript component. The multi-language
+provider also migrated one existing TypeScript test stack
 without cloud-resource changes, reinstalling or disabling protection. A subsequent
 fresh installation through the published `0.2.0-dev.1`
 TypeScript SDK passed on one CX23 in Helsinki, including pinned readiness, a
@@ -104,3 +104,9 @@ provenance. Downloaded artifact hashes, the provenance source identity and an
 independent npm signature/attestation audit passed. PyPI used OIDC attestations.
 See [release evidence](docs/validation.md#npm-oidc-prerelease). Provenance records
 the release origin; it does not establish that the installer is free of defects.
+
+The subsequent `0.2.0` publication verified GitHub/Go, npm and PyPI distributions
+against the reviewed candidate, with independent public consumer checks. See
+[stable publication evidence](docs/validation.md#stable-020-publication). This
+does not add a fresh live deployment of the stable artifacts or expand the
+CX23/BIOS installation evidence above.

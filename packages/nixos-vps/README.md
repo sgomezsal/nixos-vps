@@ -9,8 +9,8 @@ installation in Helsinki. SSH identity was verified across kexec and the final
 boot, public HTTP responded successfully, and a second deployment made no changes.
 Normal reboots and a routine `nixos-rebuild` configuration update also passed on
 the same server, including booting the updated generation.
-This remains experimental; one live installation does not cover every provider
-or recovery scenario. See the repository's
+The tested scope is CX23 with BIOS boot; other plans, live UEFI and recovery
+after interrupted formatting remain unverified. See the repository's
 [validation coverage](https://github.com/sgomezsal/nixos-vps/blob/main/docs/validation.md)
 for the tested boundaries and fix status.
 
@@ -23,6 +23,10 @@ installations. See
 [Python evidence](https://github.com/sgomezsal/nixos-vps/blob/main/docs/validation.md#fresh-python-installation)
 and [fresh-provider evidence](https://github.com/sgomezsal/nixos-vps/blob/main/docs/validation.md#fresh-provider-installation).
 
+For the published multi-language provider `0.2.0`, use the separate
+[TypeScript, Python and Go quickstart](https://github.com/sgomezsal/nixos-vps/blob/main/examples/provider/README.md).
+Its SDKs delegate to this `0.1.2` implementation; their version numbers are independent.
+
 ## Quickstart
 
 ### 1. Install the prerequisites
@@ -34,8 +38,8 @@ Use Bash on x86_64 Linux with:
 - OpenSSH 9 or newer, including `ssh-keygen`.
 - Git and Pulumi CLI v3.
 
-Other operating systems need a configured x86_64 Linux Nix builder; they are not
-covered by the local setup below.
+The supported deployment runner is x86_64 Linux. Other operating systems and
+remote-builder arrangements are outside the tested setup.
 
 If you have the source repository, install Nix first and run `nix develop`
 from the repository root. That shell provides Node.js/npm, Pulumi CLI, OpenSSH,

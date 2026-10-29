@@ -57,6 +57,11 @@ An unchanged deployment performs no installation. Ordinary configuration changes
 use `nixos-rebuild`; changing a flake path or host configuration does not reinstall
 the server. A replacement VM receives a new installation.
 
+The flake describes the system; it does not back up databases, uploaded files or
+other application data. Preserve source and lockfiles, external SSH identities,
+encrypted Pulumi state and its recovery credentials independently of the VPS.
+Application backups and tested restore procedures remain the operator's responsibility.
+
 The installer refuses an existing NixOS target. After an interrupted installation,
 inspect the target and reconcile its state before retrying. Recovery instructions
 are in the [package guide](../packages/nixos-vps/README.md#troubleshooting).
@@ -75,7 +80,7 @@ after success or failure and preserves unrelated neighboring files.
 
 [Validation coverage](validation.md) describes the checks and their limits.
 
-## Experimental component provider
+## Multi-language component provider
 
 The private `packages/nixos-vps-provider` workspace implements Pulumi's Construct
 RPC around the published `nixos-vps@0.1.2` component. A checked-in schema generates
@@ -111,9 +116,10 @@ See [language-switch evidence](validation.md#live-language-switches) for the ear
 The provider preview pipeline installs its locked runtime, generates the SDKs
 with a pinned CLI and packages their public entry points. Two builds from separate
 directories must have identical artifact hashes. Exact-artifact consumer tests
-then run before atomic output creation. Ordinary CI uploads private preview
+then run before atomic output creation. Ordinary CI uploads unpublished preview
 artifacts. A separate manually gated workflow publishes reviewed candidates; the
-`0.2.0-dev.1` plugin and SDKs are available from public distribution. See
+`0.2.0` plugin and SDKs are available from public distribution. Live test versions
+are recorded separately from publication checks. See
 [multi-language distribution](multilanguage.md) and
 [publication controls](provider-publication.md).
 

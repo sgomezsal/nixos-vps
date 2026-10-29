@@ -5,7 +5,7 @@ The `0.2.0` provider and its SDKs are published. See
 [stable publication evidence](validation.md#stable-020-publication).
 `nixos-vps@0.1.2` is a separate TypeScript component and remains unchanged.
 
-## Verified OIDC release
+## Earlier OIDC prerelease
 
 `0.2.0-dev.1` passed GitHub, npm and PyPI publication from the same reviewed
 commit. The npm upload used the configured trusted publisher and generated SLSA
@@ -56,18 +56,18 @@ The intended platform remains x86_64 Linux with Node.js 22+, Nix and OpenSSH,
 including for Python and Go. Stable version numbering would not expand platform
 support or prove untested recovery paths.
 
-### Preparation gates (historical)
+### Release evidence and remaining gates
 
-| Area | Current evidence | Work before stable publication |
+| Area | Current evidence | Remaining boundary |
 | --- | --- | --- |
-| API | Schema/baseline and adapter tests; persisted migration evidence | Review the final regenerated SDK diff and retain resource identity |
-| Live TypeScript | Published `0.2.0-dev.1` fresh installation, reboot and unchanged repeat deployment passed | Retain the [recorded limits](validation.md#fresh-provider-installation); no repeat deployment is needed for documentation |
-| Live Python | Published `0.2.0.dev1` fresh installation, reboot and unchanged repeat update passed | Retain the recorded CX23/BIOS limits |
-| Live Go | Published `v0.2.0-dev.1` fresh installation, reboot and unchanged repeat update passed in Nuremberg | Retain the recorded CX23/BIOS limits |
-| Versioning | Source versions and lockfile roots target `0.2.0`; Go SDK regenerated; API baseline retained | Review the exact candidate; original component remains `0.1.2` |
-| Publication channels | Channel regression tests and [hosted CI](https://github.com/sgomezsal/nixos-vps/actions/runs/40742650068) passed; previous OIDC prerelease evidence retained | A real stable upload remains untested |
-| Artifacts | CI verified reproducible previews at the reviewed commit | Build a new clean-commit stable candidate; old previews cannot establish stable artifact integrity |
-| Public Registry | Display name, publisher, discovery keywords and `docs/_index.md` prepared with all sixteen inputs and tested examples | Hosted Registry rendering and listing approval remain external checks; no submission made |
+| API | Schema/baseline, adapter tests and persisted migration evidence passed; `0.2.0` retains resource identity | Remote SDK migration has [documented limits](multilanguage.md#migration-limits) |
+| Live TypeScript | Published `0.2.0-dev.1` fresh installation, reboot and unchanged repeat deployment passed | Recorded [CX23/BIOS scope](validation.md#fresh-provider-installation); not a new `0.2.0` deployment |
+| Live Python | Published `0.2.0.dev1` fresh installation, reboot and unchanged repeat update passed | Same CX23/BIOS and version limits |
+| Live Go | Published `v0.2.0-dev.1` fresh installation, reboot and unchanged repeat update passed in Nuremberg | Same CX23/BIOS and version limits |
+| Versioning | `0.2.0` plugin/SDKs and `nixos-vps@0.1.2` implementation are published | Keep the interface and implementation version lines distinct |
+| Publication channels | [Stable publication](validation.md#stable-020-publication) passed GitHub/Go, npm and PyPI checks | Future versions require their own candidate review and approval |
+| Artifacts | Two independent builds matched; all six hosted artifacts matched the local candidate | Preserve the original manifest and release assets |
+| Public Registry | Local and hosted community package checks passed for [PR #13250](https://github.com/pulumi/registry/pull/13250) | Pulumi maintainer approval, merge and final hosted page verification remain pending |
 
 ### Channel policy
 
@@ -136,9 +136,11 @@ publisher registration, schema version and overview lint passed. Its 135 unit
 tests also passed. Full site lint/build was not run; the upstream `mise` setup
 failed while compiling Node on Nix. Scoped validation used the existing Nix tools,
 the required Go toolchain and an isolated Python environment instead. Local checks
-do not establish hosted Registry rendering or listing approval. Hosted checks and
-Pulumi maintainer review remain separate requirements; do not treat an open PR
-as an accepted listing. See [submission evidence](validation.md#pulumi-registry-submission).
+do not establish hosted Registry rendering or listing approval. The subsequent
+[hosted community check](https://github.com/pulumi/registry/actions/runs/40805963517)
+also passed. Pulumi maintainer review, merge and final hosted page verification
+remain pending; do not treat an open PR as an accepted listing. See
+[submission evidence](validation.md#pulumi-registry-submission).
 
 Channel-aware publication passed local regression tests and hosted CI.
 Version metadata and Registry content are prepared. Exact-candidate generation,
@@ -256,31 +258,28 @@ Keep the publication gate disabled until prerequisites and candidate review are 
 
 ## Future publication order
 
-For a new, explicitly authorized release, first choose an unused version and its
-matching channel, then update the provider metadata, generated SDKs and their version assertions. The
-versions below describe the verified OIDC prerelease; do not republish it. Keep the
-source commit fixed across all destinations.
-
-After explicit release authorization, select the matching `channel` for every
-dispatch. The versions below illustrate the existing prerelease; stable versions
-use a normal GitHub release and npm `latest` under the policy above.
+For a new, explicitly authorized release, choose an unused version and its
+matching channel, then update the provider metadata, generated SDKs and version
+assertions. Keep the source commit fixed across all destinations. Use the same
+`channel` for every dispatch; `stable` publishes a normal GitHub release and npm
+`latest`, while `prerelease` publishes a prerelease and npm `next`.
 
 1. Run `prepare` and review the candidate, source commit and checksums.
 2. Enable the repository variable and dispatch target `github`. Approve the
-   `provider-release` environment. The job creates the plugin prerelease
-   `v0.2.0-dev.1`, uploads verified assets while it is still a draft, publishes it
-   as a prerelease, and only then creates Go tag
-   `sdk/go/nixosvps/v0.2.0-dev.1`. It checks public Go module resolution and compares
+   `provider-release` environment. The job creates the matching plugin release,
+   uploads verified assets while it is still a draft, publishes it with the
+   selected channel, and then creates the matching Go submodule tag.
+   It checks public Go module resolution and compares
    the downloaded source against the candidate.
 3. Complete the npm bootstrap/trust setup if needed. Dispatch `npm` and approve
-   the `npm` environment. The scoped SDK uses version `0.2.0-dev.1` and tag `next`;
+   the `npm` environment. The scoped SDK uses the candidate version and channel tag;
    this does not promote or replace the original package's `latest` tag.
 4. Dispatch `pypi` and approve its environment. PyPI receives the wheel and source
-   distribution as version `0.2.0.dev1`, with OIDC attestations enabled.
+   distribution with the candidate's Python version, with OIDC attestations enabled.
 5. Review each verification result, then disable the repository variable again.
 
 The npm and PyPI jobs require the matching public plugin and release channel
-first, so their users do not receive an SDK pointing to a missing plugin. The prerelease
+first, so their users do not receive an SDK pointing to a missing plugin. The plugin
 supports Linux amd64 only and requires Node.js even from Python and Go.
 
 ## Verification and recovery

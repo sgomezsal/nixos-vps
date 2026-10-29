@@ -21,6 +21,13 @@ rendering and Pulumi maintainer approval remain unverified at submission time.
 An open PR is not a published Registry listing. No SDK was republished and no
 Hetzner account or VPS was accessed for this submission.
 
+The subsequent [hosted community package check](https://github.com/pulumi/registry/actions/runs/40805963517)
+passed against `v0.2.0`. Its [fact sheet](https://github.com/pulumi/registry/pull/13250#issuecomment-6486129550)
+reports successful documentation generation, plugin installation, resolution of
+all three SDKs, publisher/schema checks and overview lint. Pulumi's bot states
+that nothing more is required from the submitter; a maintainer's review is still
+required to merge. Final Registry listing and page rendering remain unverified.
+
 ## Stable 0.2.0 publication
 
 **PASS — Executed, 2026-10-29 UTC.** The plugin and generated TypeScript,
@@ -192,7 +199,7 @@ creation through the TypeScript SDK.
 | Release | Artifact identity, pending processing, integrity failures, fail-fast preparation and manual OIDC workflow guards | `npm test` |
 | Secrets | Operator-only SOPS injection with test credentials | `npm run test:secrets` |
 | Distribution and CI | Provisioning scope, pinned actions and workflow syntax | `scripts/test-publication.cjs` and package tests |
-| Experimental component provider | Installed local plugin, generated TypeScript/Python/Go SDKs, persisted-state interoperability and failure recovery | `npm run test:provider` |
+| Multi-language component provider | Installed local plugin, generated TypeScript/Python/Go SDKs, persisted-state interoperability and failure recovery | `npm run test:provider` |
 
 Run `./scripts/validate.sh` for the full suite. It supplies the additional tools
 needed by the scripts above. The suite uses temporary local state, test identities

@@ -1,6 +1,7 @@
 # nixos-vps
 
-Provision a reproducible NixOS VPS on Hetzner Cloud from TypeScript.
+Provision a reproducible NixOS VPS on Hetzner Cloud with Pulumi, using
+TypeScript, Python or Go.
 
 `nixos-vps` combines Pulumi-managed infrastructure with a locked Nix flake and
 `nixos-anywhere`. Its `NixosServer` component checks SSH policy, disk configuration
@@ -14,8 +15,7 @@ SSH. The IPv4 output resolves after installation and SSH readiness checks comple
 > four VM installation checks, NixOS builds and independent tarball consumers.
 > Live CX23 validation covers the original TypeScript component and fresh
 > installations through the published TypeScript, Python and Go provider SDKs.
-> Checks verified pinned
-> SSH through installation, HTTP readiness, normal reboot and unchanged repeat
+> Checks verified pinned SSH through installation, HTTP readiness, normal reboot and unchanged repeat
 > deployments. A routine NixOS update also passed on the original test server. See
 > [validation coverage](docs/validation.md) for details.
 
@@ -50,7 +50,15 @@ supply the operator's provisioning token.
 
 ## Get started
 
-Install the component in a Pulumi project:
+Choose the interface for your project. Both use the same installer and require
+an x86_64 Linux runner with Nix, Node.js and OpenSSH.
+
+| Interface | Published package | Start here |
+| --- | --- | --- |
+| TypeScript, Python or Go through the component provider | `@sgomezsal/nixos-vps`, `pulumi-nixos-vps`, or the Go module; version `0.2.0` | [Multi-language quickstart](examples/provider/README.md) |
+| Original TypeScript component with direct child-resource access | `nixos-vps@0.1.2` | [TypeScript quickstart](packages/nixos-vps/README.md#quickstart) |
+
+For the original TypeScript component, install it in a Pulumi project:
 
 ```sh
 npm install --ignore-scripts nixos-vps@0.1.2 @pulumi/pulumi
@@ -68,7 +76,8 @@ package:
   The development shell provides Node.js 22/npm, Pulumi CLI, OpenSSH, Git and the
   installer tools; you do not need to install those separately. Nix itself must
   already be installed. Cloning also requires Git beforehand; downloading a
-  source archive is an alternative.
+  source archive is an alternative. Use `nix develop .#provider` for the
+  multi-language quickstart; it also provides Python and Go.
 - **From npm or a tarball in an independent project:** provide Node.js 22+/npm,
   Nix 2.24+ with flakes enabled, OpenSSH 9+, Git and Pulumi CLI v3 through your
   own environment. Installing the npm package does not create a Nix development
@@ -85,18 +94,15 @@ the local setup without Hetzner credentials or creating a server.
 The [package guide](packages/nixos-vps/README.md) includes the complete API,
 installation requirements and troubleshooting instructions.
 
-The [component provider](packages/nixos-vps-provider/README.md)
-is published as `0.2.0` with TypeScript, Python and Go SDKs.
-It is separate from the existing `nixos-vps@0.1.2` package. See the
-[multi-language guide](docs/multilanguage.md) for exact installation commands,
-platform requirements and migration limits. An existing test VPS passed migration
-and TypeScript → Python → Go → TypeScript switches without infrastructure changes
-or another installation. See [live validation](docs/validation.md#live-language-switches)
-for those results and the [fresh-provider installation](docs/validation.md#fresh-provider-installation)
-for the TypeScript creation test. A separate
-[fresh Python installation](docs/validation.md#fresh-python-installation) also
-passed, followed by a [fresh Go installation](docs/validation.md#fresh-go-installation)
-in Nuremberg. Both passed reboot and unchanged repeat-update checks.
+The [multi-language guide](docs/multilanguage.md) explains platform requirements,
+API differences and migration limits. Live installation tests used the
+`0.2.0-dev.1` SDKs; `0.2.0` retains their resource contract and installer and has
+separately verified public distributions. See [validation coverage](docs/validation.md)
+for the exact versions and tested boundaries.
+
+The [Pulumi Registry submission](https://github.com/pulumi/registry/pull/13250)
+has passed its hosted community package check and awaits maintainer review.
+The SDKs are installable without a Registry listing.
 
 ## Development
 
@@ -142,6 +148,8 @@ validation and publication steps.
 ## Documentation
 
 - [Quickstart and API reference](packages/nixos-vps/README.md)
+- [Multi-language quickstart](examples/provider/README.md)
+- [SDK installation and migration](docs/multilanguage.md)
 - [Architecture](docs/architecture.md)
 - [Validation coverage](docs/validation.md)
 - [Changelog](CHANGELOG.md)
