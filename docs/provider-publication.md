@@ -1,8 +1,8 @@
-# Multi-language prerelease publication
+# Multi-language publication
 
-The experimental `0.2.0-dev.1` provider and its SDKs are published. See
-[installation](multilanguage.md#install-the-published-prerelease) and
-[verified OIDC distribution](validation.md#npm-oidc-prerelease).
+The `0.2.0` provider and its SDKs are published. See
+[installation](multilanguage.md#install-the-published-release) and
+[stable publication evidence](validation.md#stable-020-publication).
 `nixos-vps@0.1.2` is a separate TypeScript component and remains unchanged.
 
 ## Verified OIDC release
@@ -16,16 +16,16 @@ change a VPS. The publication gate is disabled again.
 
 ## Stable 0.2.0 preparation
 
-Target: **`0.2.0`**, unpublished. The existing registries still serve
-`0.2.0-dev.1` / Python `0.2.0.dev1`; no stable version, tag or Registry listing
-has been published by this preparation. The channel workflow passed
+This section records preparation before publication of **`0.2.0`**. At that
+point registries served `0.2.0-dev.1` / Python `0.2.0.dev1`. The stable release
+subsequently passed [publication checks](validation.md#stable-020-publication);
+Registry listing approval remains separate. The channel workflow passed
 [hosted CI](https://github.com/sgomezsal/nixos-vps/actions/runs/40742650068).
 
 The release source updates provider/schema/runtime metadata and lockfile root
 versions, adds the Registry presentation, and regenerates the Go SDK. The
 sixteen-input/six-required/two-output contract and delegated `nixos-vps@0.1.2`
-implementation remain unchanged. Local artifacts target `0.2.0`; public-consumer
-smoke tests deliberately retain the published `0.2.0-dev.1` baseline.
+implementation remain unchanged. Artifacts and public-consumer smoke tests now target published `0.2.0`.
 
 Fresh creation through the published TypeScript,
 [Python](validation.md#fresh-python-installation) and
@@ -56,7 +56,7 @@ The intended platform remains x86_64 Linux with Node.js 22+, Nix and OpenSSH,
 including for Python and Go. Stable version numbering would not expand platform
 support or prove untested recovery paths.
 
-### Release gates
+### Preparation gates (historical)
 
 | Area | Current evidence | Work before stable publication |
 | --- | --- | --- |
@@ -120,7 +120,7 @@ The schema now declares `displayName: nixos-vps`, `publisher: sgomezsal`, and
 component/infrastructure discovery keywords. The [Registry overview](_index.md)
 contains front matter, installation commands, the three checked-in examples, all
 sixteen inputs, credential requirements and tested boundaries. Its instructions
-target `0.2.0` and only become installable after that version is published.
+target the published `0.2.0` version.
 
 The read-only upstream check on 2026-10-28 found no `sgomezsal` publisher entry.
 The future listing request therefore needs the repository/schema entry above and
@@ -130,10 +130,10 @@ Recheck upstream before submitting. Local checks do not establish hosted Registr
 rendering or listing approval. No Registry pull request has been opened.
 
 Channel-aware publication passed local regression tests and hosted CI.
-Version metadata and Registry content are prepared. Exact-candidate generation
-and review, hosted candidate CI, Registry submission and actual uploads remain
-separate gates. Fresh TypeScript/Python/Go evidence is
-recorded separately and does not establish a stable upload.
+Version metadata and Registry content are prepared. Exact-candidate generation,
+hosted CI and registry uploads passed the linked stable publication checks.
+Registry submission and hosted rendering remain external gates. Fresh
+TypeScript/Python/Go cloud evidence records the tested prerelease separately.
 
 The channel review passed the complete `./scripts/validate.sh` suite, including
 54 core tests, 24 provider tests, independent package/engine consumers and workflow

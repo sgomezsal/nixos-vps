@@ -1,8 +1,8 @@
 # nixos-vps component provider
 
-**Private development workspace for the component provider.** Version `0.2.0`
-is an unpublished release candidate. The currently published plugin and language
-SDKs remain `0.2.0-dev.1` (`0.2.0.dev1` for Python).
+**Private development workspace for the component provider.** The plugin and
+language SDKs are published separately as `0.2.0`. This workspace stays private
+to prevent accidental direct npm publication; generated SDK artifacts are publishable.
 Existing consumers of `nixos-vps@0.1.2` do not install this workspace. See the
 [multi-language guide](../../docs/multilanguage.md) for public installation.
 

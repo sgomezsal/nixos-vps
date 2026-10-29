@@ -1,6 +1,6 @@
 # Multi-language provider
 
-The component provider has a published experimental `0.2.0-dev.1` prerelease.
+The component provider and its TypeScript, Python and Go SDKs are published as `0.2.0`.
 The existing npm package
 `nixos-vps@0.1.2` remains unchanged. These SDKs call the same implementation
 through a local Node.js provider; Python and Go do not replace the installer.
@@ -10,49 +10,48 @@ through a local Node.js provider; Python and Go do not replace the installer.
 | Interface | Name | Version |
 | --- | --- | --- |
 | Existing TypeScript component | npm `nixos-vps` | 0.1.2, already published |
-| Remote TypeScript SDK | npm `@sgomezsal/nixos-vps` | 0.2.0-dev.1 |
-| Python SDK | distribution `pulumi-nixos-vps`, import `pulumi_nixos_vps` | 0.2.0.dev1 |
-| Go SDK | `github.com/sgomezsal/nixos-vps/sdk/go/nixosvps` | v0.2.0-dev.1 |
-| Local provider plugin | `nixos-vps`, x86_64 Linux | 0.2.0-dev.1 |
+| Remote TypeScript SDK | npm `@sgomezsal/nixos-vps` | 0.2.0 |
+| Python SDK | distribution `pulumi-nixos-vps`, import `pulumi_nixos_vps` | 0.2.0 |
+| Go SDK | `github.com/sgomezsal/nixos-vps/sdk/go/nixosvps` | v0.2.0 |
+| Local provider plugin | `nixos-vps`, x86_64 Linux | 0.2.0 |
 
-The source tree prepares an unpublished `0.2.0` release candidate. The table and
-registry commands below describe actual published packages; the local artifact
-commands target the candidate version. See the
-[release preparation](provider-publication.md#stable-020-preparation).
+The release source and artifacts are recorded in the
+[publication evidence](validation.md#stable-020-publication).
 
-## Install the published prerelease
+## Install the published release
 
 On x86_64 Linux, with Node.js 22+, Pulumi and the deployment prerequisites
 available, choose one SDK in your own project:
 
 ```sh
 # TypeScript
-npm install --ignore-scripts @sgomezsal/nixos-vps@0.2.0-dev.1
+npm install --ignore-scripts @sgomezsal/nixos-vps@0.2.0
 
 # Python (inside a virtual environment)
-python -m pip install pulumi-nixos-vps==0.2.0.dev1
+python -m pip install pulumi-nixos-vps==0.2.0
 
 # Go (inside an initialized module)
-go get github.com/sgomezsal/nixos-vps/sdk/go/nixosvps@v0.2.0-dev.1
+go get github.com/sgomezsal/nixos-vps/sdk/go/nixosvps@v0.2.0
 ```
 
 Install the matching plugin explicitly, or let Pulumi acquire it from the SDK's
 recorded GitHub download URL:
 
 ```sh
-pulumi plugin install resource nixos-vps 0.2.0-dev.1 --exact \
+pulumi plugin install resource nixos-vps 0.2.0 --exact \
   --server github://api.github.com/sgomezsal/nixos-vps
 ```
 
 These commands install software; they do not create a server. Python and Go
 still require Node.js because the plugin hosts the existing TypeScript component.
-Use exact prerelease versions. The scoped package's `next` tag selects
-`0.2.0-dev.1`; `latest` still selects `0.2.0-dev.0`. Neither is a stable provider
-release. The separate unscoped `nixos-vps` package remains at `0.1.2`.
+Use matching exact SDK and plugin versions. The scoped package's `latest` tag
+selects `0.2.0`; `next` retains the earlier prerelease. The separate unscoped
+`nixos-vps` package remains at `0.1.2`.
 
 See [publication evidence](validation.md#multi-language-prerelease-distribution)
 for the first prerelease, and [OIDC release evidence](validation.md#npm-oidc-prerelease)
-for the current release. A published TypeScript consumer has
+for that prerelease, and [stable publication evidence](validation.md#stable-020-publication)
+for `0.2.0`. A published TypeScript consumer has
 [migrated an existing Hetzner test stack](validation.md#live-typescript-provider-migration)
 without replacing or reinstalling the server. Subsequent
 [Python/Go switches and a return to TypeScript](validation.md#live-language-switches)
@@ -67,8 +66,8 @@ The first Go attempt was [capacity-blocked](validation.md#go-capacity-blocked-at
 After explicit location approval, a [fresh Go installation](validation.md#fresh-go-installation)
 passed on a CX23 in Nuremberg, including reboot and unchanged repeat update. The
 [stable-release preparation](provider-publication.md#stable-020-preparation)
-records the remaining API, distribution and support-scope decisions; it does not
-change the published prerelease or authorize cloud operations.
+records the API, distribution and support-scope decisions. Publication does not
+authorize cloud operations or expand the recorded live test coverage.
 
 The resource token stays `nixos-vps:hetzner:NixosServer`. Its initial contract is
 checked against `packages/nixos-vps-provider/api-baseline.json`: sixteen inputs,
@@ -221,9 +220,9 @@ publication evidence for the source commit and workflow runs.
 
 Public distribution uses the schema's explicit
 `github://api.github.com/sgomezsal/nixos-vps` plugin URL and Pulumi's standard
-archive filename. The plugin release tag is `v0.2.0-dev.1`. A published
+archive filename. The plugin release tag is `v0.2.0`. A published
 Go module uses generated source under `sdk/go/nixosvps`
-and the separate submodule tag `sdk/go/nixosvps/v0.2.0-dev.1`. Candidate preparation
+and the separate submodule tag `sdk/go/nixosvps/v0.2.0`. Candidate preparation
 checks the source against its archive; preparation never creates either release
 tag. Future releases still require registry trust, explicit candidate preparation
 and a separate release review. See the official

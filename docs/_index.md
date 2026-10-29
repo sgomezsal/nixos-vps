@@ -21,8 +21,8 @@ Git and Pulumi CLI v3** on the deployment runner. Python and Go also require the
 language runtime/toolchain. The repository's `nix develop .#provider` shell supplies
 the development tools after Nix itself is installed.
 
-The commands target `0.2.0`; check the
-[release list](https://github.com/sgomezsal/nixos-vps/releases) for availability.
+The commands install published `0.2.0`; see the
+[release](https://github.com/sgomezsal/nixos-vps/releases/tag/v0.2.0).
 Use the same SDK and plugin version. The separate npm package `nixos-vps@0.1.2`
 is the original TypeScript component, not this generated SDK.
 

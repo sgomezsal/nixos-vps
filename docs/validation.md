@@ -1,5 +1,41 @@
 # Validation coverage
 
+## Stable 0.2.0 publication
+
+**PASS — Executed, 2026-10-29 UTC.** The plugin and generated TypeScript,
+Python and Go SDKs were published from clean source
+`8a1ed30a43237fb62530a724f7f664883e5e1f7b`. The delegated installer/component
+remains `nixos-vps@0.1.2`; the resource contract is unchanged.
+
+- [Hosted CI](https://github.com/sgomezsal/nixos-vps/actions/runs/40793558834)
+  passed validation and reproducible provider previews.
+- [Candidate preparation](https://github.com/sgomezsal/nixos-vps/actions/runs/40795414988)
+  passed two independent builds and exact-artifact engine/SDK integration. All
+  six downloaded hosted artifacts matched the local candidate byte for byte.
+- [GitHub publication](https://github.com/sgomezsal/nixos-vps/actions/runs/40796510095)
+  published normal release `v0.2.0` and module tag
+  `sdk/go/nixosvps/v0.2.0`. Public Go module resolution matched the candidate source.
+- [npm publication](https://github.com/sgomezsal/nixos-vps/actions/runs/40797576003)
+  uploaded `@sgomezsal/nixos-vps@0.2.0` through OIDC. Initial verification timed
+  out during registry processing; subsequent direct verification downloaded
+  matching bytes and confirmed `latest`. The failed job was retried under a new
+  environment approval rather than republishing or changing the version. The
+  retry passed, skipped the existing upload and verified the package and tag.
+- [PyPI publication](https://github.com/sgomezsal/nixos-vps/actions/runs/40797596300)
+  passed OIDC upload and matching-byte checks for both the wheel and source archive.
+- Independent empty-HOME consumers installed the public plugin and all three
+  SDKs. TypeScript passed CJS/ESM imports and declaration compilation; Python
+  passed dependency consistency and import checks; Go downloaded and compiled
+  the tagged module. These checks did not create cloud resources.
+
+After all destination checks passed, `PROVIDER_RELEASE_ENABLED` was set back to
+`false`. Future publication requires a new explicit review and environment approval.
+
+Release numbering does not expand supported platforms or live test coverage.
+Fresh Hetzner installations below used `0.2.0-dev.1`, not these stable artifacts.
+No additional VPS was created or modified for publication. Pulumi Registry
+publisher/listing approval and hosted overview rendering remain unverified.
+
 ## Stable candidate preparation
 
 **PASS — Executed locally, 2026-10-28.** `./scripts/validate.sh` exited zero
@@ -57,9 +93,9 @@ in Nuremberg.
 ## Current status
 
 - The original TypeScript component is published as `nixos-vps@0.1.2`.
-- The multi-language provider and SDKs are published as `0.2.0-dev.1`
-  (`0.2.0.dev1` for Python). [npm OIDC and provenance](#npm-oidc-prerelease),
-  PyPI OIDC, matching artifact hashes and independent public consumers passed.
+- The multi-language provider and SDKs are published as `0.2.0`.
+  [Stable publication](#stable-020-publication) verified matching artifact hashes
+  and independent public consumers. Earlier prerelease evidence is retained below.
 - Live installation evidence covers the original component. The provider's
   published `0.2.0-dev.0` SDKs passed migration and language switches on the
   existing server. A subsequent [fresh installation](#fresh-provider-installation)

@@ -8,8 +8,9 @@ and installer integrity before creating cloud resources, then installs NixOS ove
 SSH. The IPv4 output resolves after installation and SSH readiness checks complete.
 
 > [!NOTE]
-> **Pre-release: preparing `0.2.0` for review.** Public SDKs remain at
-> `0.2.0-dev.1`; `0.2.0` is not published. Local validation covers package and provider tests,
+> **Version `0.2.0` is published** for the multi-language provider and SDKs.
+> The original TypeScript component remains `nixos-vps@0.1.2`.
+> Local validation covers package and provider tests,
 > four VM installation checks, NixOS builds and independent tarball consumers.
 > Live CX23 validation covers the original TypeScript component and fresh
 > installations through the published TypeScript, Python and Go provider SDKs.
@@ -84,8 +85,8 @@ the local setup without Hetzner credentials or creating a server.
 The [package guide](packages/nixos-vps/README.md) includes the complete API,
 installation requirements and troubleshooting instructions.
 
-The [experimental component provider](packages/nixos-vps-provider/README.md)
-has a published `0.2.0-dev.1` prerelease with TypeScript, Python and Go SDKs.
+The [component provider](packages/nixos-vps-provider/README.md)
+is published as `0.2.0` with TypeScript, Python and Go SDKs.
 It is separate from the existing `nixos-vps@0.1.2` package. See the
 [multi-language guide](docs/multilanguage.md) for exact installation commands,
 platform requirements and migration limits. An existing test VPS passed migration

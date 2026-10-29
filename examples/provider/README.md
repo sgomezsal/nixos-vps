@@ -1,7 +1,7 @@
 # Set up the TypeScript, Python or Go SDK
 
 Choose one language and a new directory. This guide uses the published
-experimental `0.2.0-dev.1` provider and matching SDKs. The source checkout supplies
+`0.2.0` provider and matching SDKs. The source checkout supplies
 the development shell and runnable examples; the SDK and plugin come from public
 registries, not local workspace dependencies. Your generated project is independent
 of the checkout after copying its example program.
@@ -30,7 +30,7 @@ login or provider API call:
 ```sh
 export PULUMI_HOME="$(mktemp -d /tmp/nixos-vps-preview-plugins-XXXXXX)"
 export PULUMI_IGNORE_AMBIENT_PLUGINS=true
-pulumi plugin install resource nixos-vps 0.2.0-dev.1 --exact \
+pulumi plugin install resource nixos-vps 0.2.0 --exact \
   --server github://api.github.com/sgomezsal/nixos-vps
 ```
 
@@ -75,7 +75,7 @@ continues to match. No Hetzner credentials are needed for local validation.
 ### TypeScript
 
 ```sh
-npm install --ignore-scripts @sgomezsal/nixos-vps@0.2.0-dev.1
+npm install --ignore-scripts @sgomezsal/nixos-vps@0.2.0
 cp "$SOURCE/examples/provider/typescript/index.ts" index.ts
 npm pkg set main=index.ts
 npx tsc --noEmit
@@ -89,7 +89,7 @@ The generated `Pulumi.yaml` already selects Node.js with TypeScript support.
 ```sh
 printf '\n.venv/\n__pycache__/\n' >> .gitignore
 python3 -m venv .venv
-.venv/bin/python -m pip install pulumi-nixos-vps==0.2.0.dev1
+.venv/bin/python -m pip install pulumi-nixos-vps==0.2.0
 .venv/bin/python -m pip check
 cp "$SOURCE/examples/provider/python/__main__.py" __main__.py
 node -e 'require("fs").writeFileSync("Pulumi.yaml", JSON.stringify({name:"standalone-nixos",runtime:{name:"python",options:{virtualenv:".venv"}}},null,2)+"\n")'
@@ -108,7 +108,7 @@ Use the published Go module without a local replacement:
 ```sh
 cp "$SOURCE/examples/provider/go/main.go" main.go
 go mod init example.local/nixos-vps-preview
-go mod edit -require=github.com/sgomezsal/nixos-vps/sdk/go/nixosvps@v0.2.0-dev.1
+go mod edit -require=github.com/sgomezsal/nixos-vps/sdk/go/nixosvps@v0.2.0
 go mod tidy
 go build -o /tmp/nixos-vps-preview-consumer .
 node -e 'require("fs").writeFileSync("Pulumi.yaml", JSON.stringify({name:"standalone-nixos",runtime:"go"},null,2)+"\n")'
