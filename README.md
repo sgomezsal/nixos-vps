@@ -8,7 +8,8 @@ and installer integrity before creating cloud resources, then installs NixOS ove
 SSH. The IPv4 output resolves after installation and SSH readiness checks complete.
 
 > [!NOTE]
-> **Experimental / pre-release.** Local validation covers package and provider tests,
+> **Pre-release: preparing `0.2.0` for review.** Public SDKs remain at
+> `0.2.0-dev.1`; `0.2.0` is not published. Local validation covers package and provider tests,
 > four VM installation checks, NixOS builds and independent tarball consumers.
 > Live CX23 validation covers the original TypeScript component and fresh
 > installations through the published TypeScript, Python and Go provider SDKs.

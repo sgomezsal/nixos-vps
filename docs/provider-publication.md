@@ -16,11 +16,16 @@ change a VPS. The publication gate is disabled again.
 
 ## Stable 0.2.0 preparation
 
-Review date: **2026-10-28**, based on source commit `53c62a0` and its
-[successful CI run](https://github.com/sgomezsal/nixos-vps/actions/runs/40735635470).
-`0.2.0` is a proposed release, not a prepared or approved stable artifact.
-Published versions and tags remain unchanged. The channel workflow changes passed
-hosted CI; no stable publication dispatch has occurred.
+Target: **`0.2.0`**, unpublished. The existing registries still serve
+`0.2.0-dev.1` / Python `0.2.0.dev1`; no stable version, tag or Registry listing
+has been published by this preparation. The channel workflow passed
+[hosted CI](https://github.com/sgomezsal/nixos-vps/actions/runs/40742650068).
+
+The release source updates provider/schema/runtime metadata and lockfile root
+versions, adds the Registry presentation, and regenerates the Go SDK. The
+sixteen-input/six-required/two-output contract and delegated `nixos-vps@0.1.2`
+implementation remain unchanged. Local artifacts target `0.2.0`; public-consumer
+smoke tests deliberately retain the published `0.2.0-dev.1` baseline.
 
 Fresh creation through the published TypeScript,
 [Python](validation.md#fresh-python-installation) and
@@ -59,10 +64,10 @@ support or prove untested recovery paths.
 | Live TypeScript | Published `0.2.0-dev.1` fresh installation, reboot and unchanged repeat deployment passed | Retain the [recorded limits](validation.md#fresh-provider-installation); no repeat deployment is needed for documentation |
 | Live Python | Published `0.2.0.dev1` fresh installation, reboot and unchanged repeat update passed | Retain the recorded CX23/BIOS limits |
 | Live Go | Published `v0.2.0-dev.1` fresh installation, reboot and unchanged repeat update passed in Nuremberg | Retain the recorded CX23/BIOS limits |
-| Versioning | Artifact naming/codegen accepts a stable version | Update provider/schema/runtime metadata, lockfile roots, assertions, examples and generated Go SDK together; do not bump the original component automatically |
+| Versioning | Source versions and lockfile roots target `0.2.0`; Go SDK regenerated; API baseline retained | Review the exact candidate; original component remains `0.1.2` |
 | Publication channels | Channel regression tests and [hosted CI](https://github.com/sgomezsal/nixos-vps/actions/runs/40742650068) passed; previous OIDC prerelease evidence retained | A real stable upload remains untested |
 | Artifacts | CI verified reproducible previews at the reviewed commit | Build a new clean-commit stable candidate; old previews cannot establish stable artifact integrity |
-| Public Registry | Schema/download URL and published SDKs exist | Prepare Registry metadata and overview, validate documentation generation and request listing separately |
+| Public Registry | Display name, publisher, discovery keywords and `docs/_index.md` prepared with all sixteen inputs and tested examples | Hosted Registry rendering and listing approval remain external checks; no submission made |
 
 ### Channel policy
 
@@ -111,16 +116,23 @@ when preparing the submission. The intended repository entry is:
 }
 ```
 
-Prepare `displayName`, `publisher`, discovery keywords and an overview with
-configuration, prerequisites and runnable examples. The schema currently omits
-those presentation fields. The overview must explain the destructive initial
-installation, local path requirements and tested language/platform boundaries.
-Confirm publisher registration and tag/schema version agreement before submission.
-No Registry pull request has been opened by this preparation.
+The schema now declares `displayName: nixos-vps`, `publisher: sgomezsal`, and
+component/infrastructure discovery keywords. The [Registry overview](_index.md)
+contains front matter, installation commands, the three checked-in examples, all
+sixteen inputs, credential requirements and tested boundaries. Its instructions
+target `0.2.0` and only become installable after that version is published.
+
+The read-only upstream check on 2026-10-28 found no `sgomezsal` publisher entry.
+The future listing request therefore needs the repository/schema entry above and
+the mapping `"sgomezsal": "sgomezsal"` in
+[`tools/resourcedocsgen/pkg/publishers/publisher-names.json`](https://github.com/pulumi/registry/blob/master/tools/resourcedocsgen/pkg/publishers/publisher-names.json).
+Recheck upstream before submitting. Local checks do not establish hosted Registry
+rendering or listing approval. No Registry pull request has been opened.
 
 Channel-aware publication passed local regression tests and hosted CI.
-Version changes, final candidate generation, candidate CI, Registry submission and
-actual uploads remain future gates. Fresh TypeScript/Python/Go evidence is
+Version metadata and Registry content are prepared. Exact-candidate generation
+and review, hosted candidate CI, Registry submission and actual uploads remain
+separate gates. Fresh TypeScript/Python/Go evidence is
 recorded separately and does not establish a stable upload.
 
 The channel review passed the complete `./scripts/validate.sh` suite, including

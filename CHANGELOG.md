@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Prepare the unpublished `0.2.0` provider/SDK candidate, Registry metadata and
+  overview. Regenerate SDK version metadata while retaining the resource API and
+  delegated `nixos-vps@0.1.2` runtime.
+
 - Record a fresh installation through the published Go SDK in Nuremberg, with
   pinned SSH/HTTP, one controlled reboot and unchanged repeat deployment. The
   earlier Helsinki capacity block retained the working server; the later location

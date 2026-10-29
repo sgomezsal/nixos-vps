@@ -1,6 +1,6 @@
 {
   "name": "nixos-vps-plugin-runtime",
-  "version": "0.2.0-dev.1",
+  "version": "0.2.0",
   "private": true,
   "dependencies": {
     "@pulumi/pulumi": "3.272.0",

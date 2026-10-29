@@ -1,12 +1,12 @@
 {
   "name": "@sgomezsal/nixos-vps",
-  "version": "0.2.0-dev.1",
+  "version": "0.2.0",
   "lockfileVersion": 3,
   "requires": true,
   "packages": {
     "": {
       "name": "@sgomezsal/nixos-vps",
-      "version": "0.2.0-dev.1",
+      "version": "0.2.0",
       "license": "MIT",
       "dependencies": {
         "@pulumi/pulumi": "3.272.0"

@@ -1,11 +1,11 @@
 {
   "name": "nixos-vps",
-  "version": "0.2.0-dev.1",
+  "version": "0.2.0",
   "license": "MIT",
   "homepage": "https://github.com/sgomezsal/nixos-vps",
   "repository": "https://github.com/sgomezsal/nixos-vps",
   "pluginDownloadURL": "github://api.github.com/sgomezsal/nixos-vps",
-  "description": "Experimental remote component adapter for the shared nixos-vps implementation.",
+  "description": "nixos-vps provisions reproducible NixOS servers on Hetzner Cloud with Pulumi.",
   "resources": {
     "nixos-vps:hetzner:NixosServer": {
       "isComponent": true,
@@ -133,5 +133,14 @@
     "go": {
       "importBasePath": "github.com/sgomezsal/nixos-vps/sdk/go/nixosvps"
     }
-  }
+  },
+  "displayName": "nixos-vps",
+  "publisher": "sgomezsal",
+  "keywords": [
+    "pulumi",
+    "nixos",
+    "hetzner",
+    "category/infrastructure",
+    "kind/component"
+  ]
 }

@@ -1,4 +1,4 @@
-# Multi-language provider prerelease
+# Multi-language provider
 
 The component provider has a published experimental `0.2.0-dev.1` prerelease.
 The existing npm package
@@ -14,6 +14,11 @@ through a local Node.js provider; Python and Go do not replace the installer.
 | Python SDK | distribution `pulumi-nixos-vps`, import `pulumi_nixos_vps` | 0.2.0.dev1 |
 | Go SDK | `github.com/sgomezsal/nixos-vps/sdk/go/nixosvps` | v0.2.0-dev.1 |
 | Local provider plugin | `nixos-vps`, x86_64 Linux | 0.2.0-dev.1 |
+
+The source tree prepares an unpublished `0.2.0` release candidate. The table and
+registry commands below describe actual published packages; the local artifact
+commands target the candidate version. See the
+[release preparation](provider-publication.md#stable-020-preparation).
 
 ## Install the published prerelease
 
@@ -126,11 +131,11 @@ preparing another one.
 
 The output contains:
 
-- `pulumi-resource-nixos-vps-v0.2.0-dev.1-linux-amd64.tar.gz`
-- `sgomezsal-nixos-vps-0.2.0-dev.1.tgz`
-- `pulumi_nixos_vps-0.2.0.dev1-py3-none-any.whl`
-- `pulumi_nixos_vps-0.2.0.dev1.tar.gz`
-- `nixos-vps-go-0.2.0-dev.1.tar.gz`
+- `pulumi-resource-nixos-vps-v0.2.0-linux-amd64.tar.gz`
+- `sgomezsal-nixos-vps-0.2.0.tgz`
+- `pulumi_nixos_vps-0.2.0-py3-none-any.whl`
+- `pulumi_nixos_vps-0.2.0.tar.gz`
+- `nixos-vps-go-0.2.0.tar.gz`
 - `schema.json`, `manifest.json` and `SHA256SUMS`
 
 The manifest records the source commit, whether the working tree was dirty, a
@@ -155,8 +160,8 @@ directory, check out its matching source version, and verify it first:
 
 ```sh
 node scripts/provider-release.cjs verify /absolute/path/to/artifacts
-pulumi plugin install resource nixos-vps 0.2.0-dev.1 \
-  --file /absolute/path/to/artifacts/pulumi-resource-nixos-vps-v0.2.0-dev.1-linux-amd64.tar.gz \
+pulumi plugin install resource nixos-vps 0.2.0 \
+  --file /absolute/path/to/artifacts/pulumi-resource-nixos-vps-v0.2.0-linux-amd64.tar.gz \
   --exact
 ```
 
@@ -165,18 +170,18 @@ Install the chosen SDK artifact in the consumer's own environment:
 
 ```sh
 # TypeScript project
-npm install --ignore-scripts /absolute/path/to/artifacts/sgomezsal-nixos-vps-0.2.0-dev.1.tgz
+npm install --ignore-scripts /absolute/path/to/artifacts/sgomezsal-nixos-vps-0.2.0.tgz
 
 # Python project, inside its virtual environment
-python -m pip install /absolute/path/to/artifacts/pulumi_nixos_vps-0.2.0.dev1-py3-none-any.whl
+python -m pip install /absolute/path/to/artifacts/pulumi_nixos_vps-0.2.0-py3-none-any.whl
 
 # Go project: extract the module to a separate local directory
 # First create the project with go mod init and add your main.go imports.
 mkdir -p /absolute/path/to/local-module
-tar -xzf /absolute/path/to/artifacts/nixos-vps-go-0.2.0-dev.1.tar.gz \
+tar -xzf /absolute/path/to/artifacts/nixos-vps-go-0.2.0.tar.gz \
   -C /absolute/path/to/local-module
 go mod edit -replace=github.com/sgomezsal/nixos-vps/sdk/go/nixosvps=/absolute/path/to/local-module/nixosvps
-go mod edit -require=github.com/sgomezsal/nixos-vps/sdk/go/nixosvps@v0.2.0-dev.1
+go mod edit -require=github.com/sgomezsal/nixos-vps/sdk/go/nixosvps@v0.2.0
 go mod tidy
 ```
 

@@ -9,6 +9,34 @@ const {prepare,verify,writeManifest}=require('../../../scripts/provider-release.
 function temporary(t){const dir=fs.mkdtempSync(path.join(os.tmpdir(),'provider-distribution-'));t.after(()=>fs.rmSync(dir,{recursive:true,force:true}));return dir;}
 function strip(value){return Array.isArray(value)?value.map(strip):value&&typeof value==='object'?Object.fromEntries(Object.entries(value).filter(([key])=>key!=='description').map(([key,v])=>[key,strip(v)])):value;}
 
+test('registry metadata and overview describe the same package and supported languages',()=>{
+  const schema=require('../schema.json'),YAML=require('yaml');
+  const overview=fs.readFileSync(path.join(root,'docs/_index.md'),'utf8');
+  const match=overview.match(/^---\n([\s\S]*?)\n---\n/);assert.ok(match,'Registry overview requires YAML front matter');
+  const front=YAML.parse(match[1]);assert.equal(front.title,schema.displayName);assert.equal(front.layout,'package');
+  assert.ok(front.meta_desc.includes(schema.name));assert.equal(schema.publisher,'sgomezsal');
+  for(const keyword of ['category/infrastructure','kind/component'])assert.ok(schema.keywords.includes(keyword));
+  assert.match(overview,/chooser language "typescript,python,go"/);
+  for(const [language,example] of [['typescript','examples/provider/typescript/index.ts'],['python','examples/provider/python/__main__.py'],['go','examples/provider/go/main.go']]){
+    const snippet=overview.match(new RegExp('```'+language+'\\n([\\s\\S]*?)```'));
+    assert.ok(snippet,'Missing runnable '+language+' example');
+    assert.equal(snippet[1].trim(),fs.readFileSync(path.join(root,example),'utf8').trim(),'Overview example drifted from engine-tested source');
+  }
+  for(const heading of ['Installation','Example Usage','Configuration'])assert.ok(overview.includes('## '+heading));
+  for(const input of Object.keys(schema.resources['nixos-vps:hetzner:NixosServer'].inputProperties))assert.ok(overview.includes('`'+input+'`'),'Missing component input: '+input);
+  assert.match(overview,/HCLOUD_TOKEN/);assert.match(overview,/formats/);assert.match(overview,/Node.js 22\+/);
+});
+
+test('generated README distinguishes stable and prerelease versions without widening support',()=>{
+  const {sdkReadme}=require('../scripts/generate-sdks.cjs');
+  assert.match(sdkReadme('0.2.0-dev.1'),/Experimental Pulumi component SDK/);
+  assert.doesNotMatch(sdkReadme('0.2.0'),/Experimental/);
+  for(const version of ['0.2.0','0.2.0-dev.1']){
+    const readme=sdkReadme(version);assert.ok(readme.includes('('+version+')'));
+    assert.match(readme,/Installation formats/);assert.match(readme,/Node.js 22\+/);assert.match(readme,/CX23 with BIOS/);
+  }
+});
+
 test('the initial multi-language API and distribution names cannot drift silently',()=>{
   const schema=require('../schema.json');
   assert.deepEqual({resources:strip(schema.resources)},require('../api-baseline.json'));
@@ -21,7 +49,7 @@ test('the initial multi-language API and distribution names cannot drift silentl
   assert.equal(contract.pythonDistribution,'pulumi-nixos-vps');
   assert.equal(require('../../nixos-vps/package.json').name,'nixos-vps');
   const names=artifactNames(metadata.version);
-  assert.equal(names.plugin,'pulumi-resource-nixos-vps-v0.2.0-dev.1-linux-amd64.tar.gz');
+  assert.equal(names.plugin,`pulumi-resource-nixos-vps-v${metadata.version}-linux-amd64.tar.gz`);
   assert.throws(()=>artifactNames('../malicious'),/Unsupported/);
 });
 

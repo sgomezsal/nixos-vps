@@ -72,7 +72,7 @@ test('publication refuses forks, automatic events, disabled releases, dirty sour
 });
 
 function candidate(t){
- const directory=temporary(t),provider=path.resolve(__dirname,'..'),m=manifest();m.format=1;m.platform='linux-amd64';
+ const directory=temporary(t),provider=path.resolve(__dirname,'..'),m=manifest(require('../package.json').version);m.format=1;m.platform='linux-amd64';
  for(const [role,item] of Object.entries(m.artifacts)){
   fs.writeFileSync(path.join(directory,item.filename),role==='schema'?fs.readFileSync(path.join(provider,'schema.json')):role);
   item.sha256=sha256(path.join(directory,item.filename));
@@ -90,14 +90,14 @@ test('preview verification cannot accept a publication candidate and vice versa'
 });
 
 test('registry verification fails after bounded pending checks and succeeds only after matching-byte availability',async t=>{
- const {directory}=candidate(t);let requests=0,waits=0;
+ const {directory,m}=candidate(t);const version=m.version,npmTag=releasePolicy(version).npmTag;let requests=0,waits=0;
  await assert.rejects(()=>verifyRegistry(directory,'npm',{attempts:3,fetcher:async()=>{requests++;return json({},404);},sleep:async()=>{waits++;}}),/PENDING/);
  assert.equal(requests,3);assert.equal(waits,2);
- const fetcher=async url=>url.endsWith('/sdk.tgz')?new Response('nodejs'):json({'dist-tags':{next:version},versions:{[version]:{name:'@sgomezsal/nixos-vps',version,dist:{tarball:'https://registry.npmjs.org/sdk.tgz'}}}});
+ const fetcher=async url=>url.endsWith('/sdk.tgz')?new Response('nodejs'):json({'dist-tags':{[npmTag]:version},versions:{[version]:{name:'@sgomezsal/nixos-vps',version,dist:{tarball:'https://registry.npmjs.org/sdk.tgz'}}}});
  await verifyRegistry(directory,'npm',{attempts:1,fetcher});
  let tagChecks=0;
  const wrongTag=async url=>url.endsWith('/sdk.tgz')?new Response('nodejs'):
-  json({'dist-tags':{next:++tagChecks===2?version:'0.0.1'},versions:{[version]:{name:'@sgomezsal/nixos-vps',version,dist:{tarball:'https://registry.npmjs.org/sdk.tgz'}}}});
+  json({'dist-tags':{[npmTag]:++tagChecks===2?version:'0.0.1'},versions:{[version]:{name:'@sgomezsal/nixos-vps',version,dist:{tarball:'https://registry.npmjs.org/sdk.tgz'}}}});
  await assert.rejects(()=>verifyRegistry(directory,'npm',{attempts:1,fetcher:wrongTag}),/expected channel tag/);
  await verifyRegistry(directory,'npm',{attempts:1,fetcher:wrongTag});
 });

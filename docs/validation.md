@@ -1,5 +1,30 @@
 # Validation coverage
 
+## Stable candidate preparation
+
+**PASS — Executed locally, 2026-10-28.** `./scripts/validate.sh` exited zero
+with the unpublished `0.2.0` provider source. Build/type checks, 54 core tests
+and 26 provider tests passed. Independent tarball consumption, local SSH checks,
+SOPS fixtures, read-only/fix validation, persisted engine lifecycle tests and
+all three SDK/example integration tests passed with loopback cloud providers.
+Template parity and publication-scope checks passed. The dependency audit found
+zero vulnerabilities; the credential signature scan checked 118 source/build/log
+files with zero findings. Nix checks reused existing VM derivations; this run
+is not evidence of new VM boots.
+
+Regression tests check Registry metadata, all component inputs, language examples
+against the engine-tested source files, and stable/prerelease SDK README wording.
+Schema comparison confirmed unchanged resources, language bindings and plugin
+URL; lockfile changes only update the workspace/SDK version. The runtime still
+uses published `nixos-vps@0.1.2`. Recorded live tests below exercised
+`0.2.0-dev.1`, not a new deployment of the stable candidate.
+
+Candidate artifacts require their own reproducibility/integrity manifest before
+publication. Hosted CI for this source, actual stable publication, Registry
+publisher registration/listing and hosted documentation rendering remain separate
+gates. This local validation did not use operator credentials, access Hetzner,
+modify a VPS, upload packages or change registry tags.
+
 ## Release channel review
 
 **PASS — Executed locally, 2026-10-28.** `./scripts/validate.sh` exited zero

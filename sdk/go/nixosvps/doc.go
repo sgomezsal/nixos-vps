@@ -1,2 +1,2 @@
-// Remote component adapter for the shared nixos-vps implementation. Unreleased.
+// nixos-vps provisions reproducible NixOS servers on Hetzner Cloud with Pulumi.
 package nixosvps

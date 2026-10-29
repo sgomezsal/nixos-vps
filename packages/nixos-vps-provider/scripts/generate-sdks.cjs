@@ -3,6 +3,11 @@
 const fs=require('node:fs'),path=require('node:path'),cp=require('node:child_process');
 const {contract,checkTools}=require('./distribution.cjs');
 
+function sdkReadme(version) {
+  const label=version.includes('-')?'Experimental Pulumi component SDK':'Pulumi component SDK';
+  return `# nixos-vps\n\n${label} (${version}).\n\nCreates a new Hetzner server, firewall and SSH key registration, then installs\nNixOS using the shared nixos-vps installer. Installation formats the target disk.\nNode.js 22+, Nix, OpenSSH and Pulumi are required on x86_64 Linux for every SDK.\n\nUse matching plugin and SDK versions. Installation and the supported scope are\ndocumented in the [multi-language guide](https://github.com/sgomezsal/nixos-vps/blob/main/docs/multilanguage.md).\nSee the [quickstart](https://github.com/sgomezsal/nixos-vps/blob/main/examples/provider/README.md)\nfor runnable examples, prerequisites and migration limits. Live validation covers\nCX23 with BIOS boot; other plans and interrupted-installation recovery remain\nunverified.\n\nThe original npm package nixos-vps remains a separate TypeScript interface.\nThis SDK delegates to the same component through the local provider process.\n\nLicensed under MIT.\n`;
+}
+
 function generate(destination, options={}) {
   const output=path.resolve(destination);
   if(fs.existsSync(output)&&(fs.lstatSync(output).isSymbolicLink()||!fs.statSync(output).isDirectory()||fs.readdirSync(output).length)) {
@@ -57,17 +62,17 @@ function generate(destination, options={}) {
     const location=path.join(output,file),plugin=JSON.parse(fs.readFileSync(location));
     fs.writeFileSync(location,JSON.stringify({...plugin,version},null,2)+'\n');
   }
-  const readme=`# nixos-vps\n\nExperimental Pulumi component SDK (${version}).\n\nCreates a new Hetzner server, firewall and SSH key registration, then installs\nNixOS using the shared nixos-vps installer. Installation formats the target disk.\nNode.js 22+, Nix, OpenSSH and Pulumi are required on x86_64 Linux for every SDK.\n\nUse matching plugin and SDK versions. Availability and installation instructions\nare documented in the [multi-language guide](https://github.com/sgomezsal/nixos-vps/blob/main/docs/multilanguage.md).\nSee the [local quickstart](https://github.com/sgomezsal/nixos-vps/blob/main/examples/provider/README.md)\nfor runnable examples, prerequisites and the tested migration limits.\n\nThe original npm package nixos-vps remains a separate TypeScript interface.\nThis SDK delegates to the same component through the local provider process.\n\nLicensed under MIT.\n`;
+  const readme=sdkReadme(version);
   for(const directory of ['nodejs','python','go/nixosvps']) {
     fs.writeFileSync(path.join(output,directory,'README.md'),readme);
     fs.copyFileSync(path.join(__dirname,'../LICENSE'),path.join(output,directory,'LICENSE'));
   }
   return output;
 }
-module.exports={generate};
+module.exports={generate,sdkReadme};
 if(require.main===module) {
   try {
     if(process.argv.length!==3)throw Error('Usage: node generate-sdks.cjs /new/output/directory');
-    console.log('Generated unreleased local SDKs in '+generate(process.argv[2]));
+    console.log('Generated local SDKs in '+generate(process.argv[2])+'. Not published.');
   }catch(error){console.error(error.message);process.exitCode=1;}
 }
