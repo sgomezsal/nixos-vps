@@ -1,5 +1,26 @@
 # Validation coverage
 
+## Pulumi Registry submission
+
+**PASS — Executed locally, 2026-10-29 UTC.** The Registry's community package
+checker ran against public release `v0.2.0` and returned `pass` / "Ready for
+approval". It generated metadata/documentation, installed the Linux amd64 plugin,
+resolved the advertised npm, PyPI and Go SDKs, accepted the new publisher mapping,
+matched the schema version to the release and found no overview lint issues.
+The checker used a separate temporary HOME and plugin directory without cloud
+credentials. These were installation/resolution checks, not cloud provisioning.
+The upstream checker unit suite passed **135 tests**.
+
+[pulumi/registry#13250](https://github.com/pulumi/registry/pull/13250) adds exactly
+one `community-packages/package-list.json` entry and the required publisher
+mapping, with no generated files. Local diff checks and JSON parsing passed.
+The Registry's complete site lint/build was not executed: its `mise` setup failed
+while compiling Node on Nix. The scoped checks used existing Nix tools, Go
+1.26.10 and an isolated Python environment. Hosted Registry checks, final page
+rendering and Pulumi maintainer approval remain unverified at submission time.
+An open PR is not a published Registry listing. No SDK was republished and no
+Hetzner account or VPS was accessed for this submission.
+
 ## Stable 0.2.0 publication
 
 **PASS — Executed, 2026-10-29 UTC.** The plugin and generated TypeScript,

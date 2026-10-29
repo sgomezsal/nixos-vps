@@ -122,12 +122,23 @@ contains front matter, installation commands, the three checked-in examples, all
 sixteen inputs, credential requirements and tested boundaries. Its instructions
 target the published `0.2.0` version.
 
-The read-only upstream check on 2026-10-28 found no `sgomezsal` publisher entry.
-The future listing request therefore needs the repository/schema entry above and
-the mapping `"sgomezsal": "sgomezsal"` in
+The upstream check found no `sgomezsal` publisher entry. The submitted request
+adds the repository/schema entry above and the mapping
+`"sgomezsal": "sgomezsal"` in
 [`tools/resourcedocsgen/pkg/publishers/publisher-names.json`](https://github.com/pulumi/registry/blob/master/tools/resourcedocsgen/pkg/publishers/publisher-names.json).
-Recheck upstream before submitting. Local checks do not establish hosted Registry
-rendering or listing approval. No Registry pull request has been opened.
+The request is [pulumi/registry#13250](https://github.com/pulumi/registry/pull/13250),
+opened on 2026-10-29 UTC. Its diff contains only the package entry and publisher
+mapping; it includes no generated documentation or package YAML.
+
+The Registry's own local checker returned `pass` against public `v0.2.0`:
+documentation generation, plugin installation, all three SDK resolutions,
+publisher registration, schema version and overview lint passed. Its 135 unit
+tests also passed. Full site lint/build was not run; the upstream `mise` setup
+failed while compiling Node on Nix. Scoped validation used the existing Nix tools,
+the required Go toolchain and an isolated Python environment instead. Local checks
+do not establish hosted Registry rendering or listing approval. Hosted checks and
+Pulumi maintainer review remain separate requirements; do not treat an open PR
+as an accepted listing. See [submission evidence](validation.md#pulumi-registry-submission).
 
 Channel-aware publication passed local regression tests and hosted CI.
 Version metadata and Registry content are prepared. Exact-candidate generation,
